@@ -7,46 +7,38 @@ import pyroms
 
 # ------------ basic grid parameters -----------------------------------
 # grid dimension
-Xfjord = 100
-Xocean = 50
-Yfjord = 500
-Yocean = 100
+Xfjord = 500
+Xocean = 100
+Yfjord = 100
+Yocean = 50
 
-Xpsi = Xfjord + 2*Xocean  # horizontal total
-Ypsi = Yfjord + Yocean  # vertical total
+Xpsi = Xfjord + Xocean  # vertical total
+Ypsi = Yfjord + 2*Yocean  # horizontal total
 
 Xrho = Xpsi+2
 Yrho = Ypsi+2
 Xvert = Xpsi+3
 Yvert = Ypsi+3
 
-# # total grid length
-# Xsize = 100.e3  # m
-# Ysize = 150.e3  # m
-# 
-# # average grid size
-# dxa = Xsize/Xpsi  # m
-# dya = Ysize/Ypsi  # m
-
 # location of fjord mouth
-Ym = 100.e3  # m
+Xm = 100.e3  # m
 
 # location of sill
-Ys = 90.e3  # m
+Xs = 90.e3  # m
 
 # sill width
-Ysw = 5.e3  # m
+Xsw = 5.e3  # m
 
 # location of channel deepening
-Yd1 = 60.e3  # m
-Yd2 = 70.e3  # m
+Xd1 = 60.e3  # m
+Xd2 = 70.e3  # m
 
 # fjord width
-Xw = 20.e3  # m
+Yw = 20.e3  # m
 
 # grid spacing parameter
-xexp = 0.1
-yexp = 0.04
+xexp = 0.04
+yexp = 0.1
 
 # fjord max depth
 Dm = 400.
@@ -72,10 +64,22 @@ N = 40
 hmin = 10
 
 # grid name
-grd_name = 'fjord_ana'
+grd_name = 'fjord'
 
 # ------------ horizontal grid construction ----------------------------
 # X direction
+xfjord = np.linspace(0, Xm, Xfjord+1)
+dxfjord = np.diff(xfjord).mean()
+
+dxocean = np.exp(xexp*np.arange(Xocean))*dxfjord
+xocean = xfjord[-1] + np.cumsum(dxocean)
+
+xvert = np.concatenate((xfjord, xocean))
+xvert = np.concatenate((np.array([2*xvert[0]-xvert[1]]),
+                        xvert,
+                        np.array([2*xvert[-1]-xvert[-2]])))
+
+# Y direction
 xfjord = np.linspace(-Xw/2., Xw/2., Xfjord+1)
 dxfjord = np.diff(xfjord).mean()
 
@@ -88,18 +92,7 @@ xvert = np.concatenate((np.array([2*xvert[0]-xvert[1]]),
                         xvert,
                         np.array([2*xvert[-1]-xvert[-2]])))
 
-# Y direction
-yfjord = np.linspace(0, Ym, Yfjord+1)
-dyfjord = np.diff(yfjord).mean()
-
-dyocean = np.exp(yexp*np.arange(Yocean))*dyfjord
-yocean = yfjord[-1] + np.cumsum(dyocean)
-
-yvert = np.concatenate((yfjord, yocean))
-yvert = np.concatenate((np.array([2*yvert[0]-yvert[1]]),
-                        yvert,
-                        np.array([2*yvert[-1]-yvert[-2]])))
-
+# meshgrid it
 xxvert, yyvert = np.meshgrid(xvert, yvert)
 
 # generate mask

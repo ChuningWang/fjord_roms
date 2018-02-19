@@ -13,29 +13,69 @@
 **                     sediment_estuary_test.in
 */
 
-#define UV_ADV
-#define UV_LOGDRAG
-#define SPLINES_VDIFF
-#define SPLINES_VVISC
-#define TS_U3HADVECTION
-#define SALINITY
+/* general */
+#define MASKING
 #define SOLVE3D
-#define SEDIMENT
+#define SALINITY
+#define NONLIN_EOS
+
+/* outputs */
+#define NO_WRITE_GRID
+#undef NO_HIS
+
+/* advection, dissipation, pressure grad, etc. */
+#define UV_ADV
+#define UV_COR
+
+#define TS_U3HADVECTION
+#ifdef SOLVE3D
+# define TS_C4VADVECTION
+#endif
+
+#define UV_VIS2
+#define MIX_S_UV
+#define VISC_GRID
+
+#define TS_DIF2
+#define MIX_GEO_TS
+#define DIFF_GRID
+
+#ifdef SOLVE3D
+# define DJ_GRADPS
+#endif
+
+/* vertical mixing */
+#ifdef SOLVE3D
+# define SPLINES_VDIFF
+# define SPLINES_VVISC
+# define RI_SPLINES
+#endif
+
+#ifdef SOLVE3D
+# define GLS_MIXING
+# undef MY25_MIXING
+
+# if defined GLS_MIXING || defined MY25_MIXING
+#  define N2S2_HORAVG
+#  define CRAIG_BANNER
+#  define KANTHA_CLAYSON
+#  define CHARNOK
+# endif
+#endif
+
+/* sediment */
 #ifdef SEDIMENT
 # define SUSPLOAD
 #endif
-#define AVERAGES
-#define GLS_MIXING
-#undef  MY25_MIXING
-#if defined GLS_MIXING || defined MY25_MIXING
-# define KANTHA_CLAYSON
-# undef  CANUTO_A
-# define N2S2_HORAVG
-# define RI_SPLINES
-#endif
-#define ANA_GRID
+
+/* analytical functionals */
 #define ANA_INITIAL
-#define ANA_SEDIMENT
+#define ANA_FSOBC
+#define ANA_M2OBC
+#define ANA_TOBC
+#ifdef SEDIMENT
+# define ANA_SEDIMENT
+#endif
 #define ANA_SMFLUX
 #define ANA_STFLUX
 #define ANA_BTFLUX
@@ -43,6 +83,3 @@
 #define ANA_BSFLUX
 #define ANA_SPFLUX
 #define ANA_BPFLUX
-#define ANA_FSOBC
-#define ANA_M2OBC
-#define ANA_TOBC
