@@ -91,7 +91,7 @@ GridsInLayer =  1
 ! Grid dimension parameters. See notes below in the Glossary for how to set
 ! these parameters correctly.
 
-          Lm == 600           ! Number of I-direction INTERIOR RHO-points
+          Lm == 550           ! Number of I-direction INTERIOR RHO-points
           Mm == 200           ! Number of J-direction INTERIOR RHO-points
            N == 40            ! Number of vertical levels
 
@@ -145,15 +145,15 @@ GridsInLayer =  1
 !
 !                   1       2       3       4
 
-   LBC(isFsur) ==   Cha     Clo     Cha     Clo         ! free-surface
-   LBC(isUbar) ==   Fla     Clo     Fla     Clo         ! 2D U-momentum
-   LBC(isVbar) ==   Fla     Clo     Fla     Clo         ! 2D V-momentum
-   LBC(isUvel) ==   RadNud  Clo     RadNud  Clo         ! 3D U-momentum
-   LBC(isVvel) ==   RadNud  Clo     RadNud  Clo         ! 3D V-momentum
-   LBC(isMtke) ==   Gra     Clo     Gra     Clo         ! mixing TKE
+   LBC(isFsur) ==   Clo     Cha     Cha     Cha         ! free-surface
+   LBC(isUbar) ==   Clo     Fla     Fla     Fla         ! 2D U-momentum
+   LBC(isVbar) ==   Clo     Fla     Fla     Fla         ! 2D V-momentum
+   LBC(isUvel) ==   Clo     RadNud  RadNud  RadNud      ! 3D U-momentum
+   LBC(isVvel) ==   Clo     RadNud  RadNud  RadNud      ! 3D V-momentum
+   LBC(isMtke) ==   Clo     Gra     Gra     Gra         ! mixing TKE
                                           
-   LBC(isTvar) ==   RadNud  Clo     RadNud  Clo \       ! temperature
-                    RadNud  Clo     RadNud  Clo         ! salinity
+   LBC(isTvar) ==   Clo     RadNud  RadNud  RadNud \    ! temperature
+                    Clo     RadNud  RadNud  RadNud      ! salinity
 
 ! Ice boundary conditions
 
@@ -199,9 +199,9 @@ ad_VolCons(north) ==  F                            ! northern boundary
 
 ! Time-Stepping parameters.
 
-      NTIMES == <NSTEPS>
-          DT == 20.0d0
-     NDTFAST == 10
+      NTIMES == 5760
+          DT == 30.0d0
+     NDTFAST == 30
 
 ! Model iteration loops parameters.
 
@@ -220,27 +220,27 @@ ad_VolCons(north) ==  F                            ! northern boundary
 
 ! Input/Output parameters.
 
-       NRREC == <RESTART>
+       NRREC == 0
    LcycleRST == T
-        NRST == <NRESTART>
-        NSTA == 15
+        NRST == 4320
+        NSTA == 12
         NFLT == 1
-       NINFO == 15
+       NINFO == 12
 
 ! Output history, average, diagnostic files parameters.
 
-     LDEFOUT == <LDEFOUT>
-        NHIS == 180
-     NDEFHIS == 4320
+     LDEFOUT == T
+        NHIS == 120
+     NDEFHIS == 2880
       NTSAVG == 1
-        NAVG == 4320
-     NDEFAVG == 4320
+        NAVG == 2880
+     NDEFAVG == 2880
      NTSAVG2 == 1
-       NAVG2 == 4320
-    NDEFAVG2 == 4320
+       NAVG2 == 2880
+    NDEFAVG2 == 2880
       NTSDIA == 1
-        NDIA == 4320
-     NDEFDIA == 4320
+        NDIA == 2880
+     NDEFDIA == 2880
 
 ! Output tangent linear and adjoint models parameters.
 
@@ -250,8 +250,8 @@ ad_VolCons(north) ==  F                            ! northern boundary
    LcycleADJ == F
         NADJ == 480
      NDEFADJ == 0
-        NSFF == 2880
-        NOBC == 2880
+        NSFF == 4320
+        NOBC == 4320
 
 ! GST output and check pointing restart parameters.
 
@@ -267,7 +267,8 @@ ad_VolCons(north) ==  F                            ! northern boundary
 ! Harmonic/biharmonic horizontal diffusion of tracer for nonlinear model
 ! and adjoint-based algorithms: [1:NAT+NPT,Ngrids].
 
-        TNU2 == 2*1.0d0                         ! m2/s
+!         TNU2 == 2*1.0d0                         ! m2/s
+        TNU2 == 2*50.0d0                        ! m2/s
         TNU4 == 2*1.0d0                         ! m4/s
 
      ad_TNU2 == 0.0d0  0.0d0                    ! m2/s
@@ -276,7 +277,8 @@ ad_VolCons(north) ==  F                            ! northern boundary
 ! Harmonic/biharmonic, horizontal viscosity coefficient for nonlinear model
 ! and adjoint-based algorithms: [Ngrids].
 
-       VISC2 == 5.0d0                           ! m2/s
+!        VISC2 == 10.0d0                          ! m2/s
+       VISC2 == 500.0d0                         ! m2/s
        VISC4 == 25.0d0                          ! m4/s
 
     ad_VISC2 == 0.0d0                           ! m2/s
@@ -287,19 +289,19 @@ ad_VolCons(north) ==  F                            ! northern boundary
 ! sponge areas) for the desired application grid.
 
     LuvSponge == F                              ! horizontal momentum
-LtracerSponge == F F F F F                      ! temperature, salinity, inert
+LtracerSponge == F F                            ! temperature, salinity, inert
 
 ! Vertical mixing coefficients for tracers in nonlinear model and
 ! basic state scale factor in adjoint-based algorithms: [1:NAT+NPT,Ngrids]
 
-     AKT_BAK == 2*1.0d-6                        ! m2/s
+     AKT_BAK == 2*1.0d-7                        ! m2/s
 
   ad_AKT_fac == 1.0d0  1.0d0                    ! nondimensional
 
 ! Vertical mixing coefficient for momentum for nonlinear model and
 ! basic state scale factor in adjoint-based algorithms: [Ngrids].
 
-     AKV_BAK == 1.0d-5                          ! m2/s
+     AKV_BAK == 1.0d-6                          ! m2/s
 
   ad_AKV_fac == 1.0d0                           ! nondimensional
 
@@ -401,22 +403,22 @@ LtracerSponge == F F F F F                      ! temperature, salinity, inert
 ! origin for tidal forcing, and model reference time for output
 ! NetCDF units attribute.
 
-      DSTART =  39461.0d0                  ! days (Jan 15, 2008)
-  TIDE_START =  -693962.0d0                ! days
-    TIME_REF =  19000101.0d0               ! yyyymmdd.dd
+      DSTART =  0.0d0                      ! days (Jan 15, 2008)
+  TIDE_START =  0.0d0                      ! days
+    TIME_REF =  0.0d0                      ! yyyymmdd.dd
 
 ! Nudging/relaxation time scales, inverse scales will be computed
 ! internally, [1:Ngrids].
 
-       TNUDG == 2*0.0d0                    ! days
-       ZNUDG == 0.0d0                      ! days
-      M2NUDG == 0.0d0                      ! days
-      M3NUDG == 0.0d0                      ! days
+       TNUDG == 2*360.0d0                  ! days
+       ZNUDG == 360.0d0                    ! days
+      M2NUDG == 360.0d0                    ! days
+      M3NUDG == 360.0d0                    ! days
 
 ! Nudging/relaxation time scale for surface salinity nudging, inverse
 ! scales will be computed internally, [1:Ngrids].
 
-       TNUDG_SSS == 90.0d0                 ! days
+       TNUDG_SSS == 360.0d0                ! days
 
 ! Threshold to trigger SSS correction toward climatolgy,
 ! needs SCORRECTION and SSSC_THRESHOLD defined
@@ -427,15 +429,15 @@ LtracerSponge == F F F F F                      ! temperature, salinity, inert
 ! conditions, [1:Ngrids]. If OBCFAC > 1, nudging on inflow is stronger
 ! than on outflow (recommended).
 
-      OBCFAC == 0.0d0                      ! nondimensional
+      OBCFAC == 120.0d0                    ! nondimensional
 
 ! Linear equation of State parameters:
 
           R0 == 1027.0d0                   ! kg/m3
-          T0 == 14.0d0                     ! Celsius
-          S0 == 35.0d0                     ! PSU
+          T0 == 10.0d0                     ! Celsius
+          S0 == 30.0d0                     ! PSU
        TCOEF == 1.7d-4                     ! 1/Celsius
-       SCOEF == 0.0d0                      ! 1/PSU
+       SCOEF == 7.6d-4                     ! 1/PSU
 
 ! Slipperiness parameter: 1.0 (free slip) or -1.0 (no slip)
 
@@ -445,14 +447,14 @@ LtracerSponge == F F F F F                      ! temperature, salinity, inert
 ! point Sources/Sinks (like river runoff transport) and mass point
 ! Sources/Sinks (like volume vertical influx), [1:Ngrids].
 
-      LuvSrc == T                          ! horizontal momentum transport
+      LuvSrc == F                          ! horizontal momentum transport
        LwSrc == F                          ! volume vertical influx
 
 ! Logical switches (TRUE/FALSE) to activate tracers point Sources/Sinks
 ! (like river runoff) and to specify which tracer variables to consider:
 ! [1:NAT+NPT,Ngrids].  See glossary below for details.
 
-  LtracerSrc == T T F F T                  ! temperature, salinity, inert
+  LtracerSrc == F F                        ! temperature, salinity, inert
 
 ! Logical switches (TRUE/FALSE) to read and process climatology fields.
 ! See glossary below for details.
@@ -877,8 +879,8 @@ Dout(iTvdif) == T T     ! temp_vdiff, ...    vertical diffusion
 
 ! Input NetCDF file names, [1:Ngrids].
 
-     GRDNAME == <GRID>
-     ININAME == <INIT>
+     GRDNAME == /glade/u/home/chuning/git/fjord_roms/fjord_grd.nc
+     ININAME == ocean_ini.nc
      ITLNAME == ocean_itl.nc
      IRPNAME == ocean_irp.nc
      IADNAME == ocean_iad.nc
@@ -898,10 +900,10 @@ Dout(iTvdif) == T T     ! temp_vdiff, ...    vertical diffusion
 ! except the last one.
 
    NCLMFILES == 1                         ! number of climate files
-     CLMNAME == <CLMFILE>
+     CLMNAME == ocean_clm.nc
 
     NBCFILES == 1                         ! number of boundary files
-     BRYNAME == <BRYFILE>
+     BRYNAME == ocean_bdy.nc
 
 ! Input climatology nudging coefficients file name.
 
@@ -909,11 +911,11 @@ Dout(iTvdif) == T T     ! temp_vdiff, ...    vertical diffusion
 
 ! Input Sources/Sinks forcing (like river runoff) file name.
 
-     SSFNAME == <RUNOFF_FILE>
+     SSFNAME == ocean_ssf.nc
 
 ! Input tidal forcing file name.
 
-    TIDENAME == <TIDES_FILE>
+    TIDENAME == ocean_tide.nc
 
 ! Input forcing NetCDF file name(s).  The USER has the option to enter
 ! several files names per each nested grid.  For example, the USER may
@@ -926,45 +928,36 @@ Dout(iTvdif) == T T     ! temp_vdiff, ...    vertical diffusion
 ! at the each entry, except the last one.
 
 
-     NFFILES == 9                         ! number of forcing files
+     NFFILES == 1                         ! number of forcing files
 
-     FRCNAME == <FORCINGDIR>/lwrad_down_clim_JRA55v1.3.nc \
-                <FORCINGDIR>/swrad_clim_JRA55v1.3.nc \
-                <FORCINGDIR>/Pair_clim_JRA55v1.3.nc \
-                <FORCINGDIR>/Qair_clim_JRA55v1.3.nc \
-                <FORCINGDIR>/Tair_clim_JRA55v1.3.nc \
-                <FORCINGDIR>/rain_clim_JRA55v1.3.nc \
-                <FORCINGDIR>/snow_clim_JRA55v1.3.nc \
-                <FORCINGDIR>/Uwind_clim_JRA55v1.3.nc \
-                <FORCINGDIR>/Vwind_clim_JRA55v1.3.nc
-
+     FRCNAME == ocean_frc.nc
 
 ! Output NetCDF file names, [1:Ngrids].
 
-     DAINAME == <OUTPUTDIR>/<CONFCASE>_dai.nc
-     GSTNAME == <OUTPUTDIR>/<CONFCASE>_gst.nc
-     RSTNAME == <OUTPUTDIR>/<CONFCASE>_rst.nc
-     HISNAME == <OUTPUTDIR>/<CONFCASE>_his.nc
-     QCKNAME == <OUTPUTDIR>/<CONFCASE>_his2.nc
-     TLMNAME == <OUTPUTDIR>/<CONFCASE>_tlm.nc
-     TLFNAME == <OUTPUTDIR>/<CONFCASE>_tlf.nc
-     ADJNAME == <OUTPUTDIR>/<CONFCASE>_adj.nc
-     AVGNAME == <OUTPUTDIR>/<CONFCASE>_avg.nc
-    AVG2NAME == <OUTPUTDIR>/<CONFCASE>_avg2.nc
-     HARNAME == <OUTPUTDIR>/<CONFCASE>_har.nc
-     DIANAME == <OUTPUTDIR>/<CONFCASE>_dia.nc
-     STANAME == <OUTPUTDIR>/<CONFCASE>_sta.nc
-     FLTNAME == <OUTPUTDIR>/<CONFCASE>_flt.nc
+     DAINAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_dai.nc
+     GSTNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_gst.nc
+     RSTNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_rst.nc
+     HISNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_his.nc
+     QCKNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_his2.nc
+     TLMNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_tlm.nc
+     TLFNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_tlf.nc
+     ADJNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_adj.nc
+     AVGNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_avg.nc
+    AVG2NAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_avg2.nc
+     HARNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_har.nc
+     DIANAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_dia.nc
+     STANAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_sta.nc
+     FLTNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_flt.nc
 
 ! Input ASCII parameter filenames.
 
-     APARNAM =  <OUTPUTDIR>/s4dvar.in
-     SPOSNAM =  <OUTPUTDIR>/stations.in
-     FPOSNAM =  <OUTPUTDIR>/floats.in
-     IPARNAM =  <OUTPUTDIR>/ice.in
-     BPARNAM =  <OUTPUTDIR>/bio_Fennel.in
-     SPARNAM =  <OUTPUTDIR>/sediment.in
-     USRNAME =  <OUTPUTDIR>/MyFile.dat
+     APARNAM =  /glade/scratch/chuning/tmpdir_fjord/s4dvar.in
+     SPOSNAM =  /glade/scratch/chuning/tmpdir_fjord/stations.in
+     FPOSNAM =  /glade/scratch/chuning/tmpdir_fjord/floats.in
+     IPARNAM =  /glade/scratch/chuning/tmpdir_fjord/ice.in
+     BPARNAM =  /glade/scratch/chuning/tmpdir_fjord/bio_Fennel.in
+     SPARNAM =  /glade/scratch/chuning/tmpdir_fjord/sediment.in
+     USRNAME =  /glade/scratch/chuning/tmpdir_fjord/MyFile.dat
 
 !
 !  GLOSSARY:

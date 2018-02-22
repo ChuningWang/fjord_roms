@@ -271,7 +271,9 @@
         DO j=JstrT,JendT
           DO i=IstrT,IendT
             t(i,j,k,1,itemp)=T0(ng)
+#  ifdef SALINITY
             t(i,j,k,1,isalt)=S0(ng)
+#  endif
           END DO
         END DO
       END DO

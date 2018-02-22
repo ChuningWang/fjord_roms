@@ -1,0 +1,8 @@
+
+Currently Loaded Modules:
+  1) ncarenv/1.2           4) mpt/2.15f        7) jupyter/5.0.0  10) matplotlib/2.0.2  13) bottleneck/1.2.0  16) wrapt/1.10.10         19) nco/4.6.9
+  2) gnu/6.3.0             5) netcdf/4.4.1.1   8) numpy/1.13.3   11) mpi4py/2.0.0-mpt  14) pandas/0.20.1     17) pylint/1.7.2          20) matlab/R2016b
+  3) ncarcompilers/0.4.1   6) python/2.7.13    9) scipy/0.19.1   12) numexpr/2.6.2     15) xarray/0.9.5      18) netcdf4-python/1.2.7
+
+ 
+

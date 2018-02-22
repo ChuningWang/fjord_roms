@@ -63,6 +63,11 @@
 # endif
 #endif
 
+#define ANA_DRAG
+#define UV_DRAG_GRID
+#define UV_LDRAG
+#undef UV_QDRAG
+
 /* sediment */
 #ifdef SEDIMENT
 # define SUSPLOAD
@@ -72,6 +77,7 @@
 #define ANA_INITIAL
 #define ANA_FSOBC
 #define ANA_M2OBC
+#define ANA_M3OBC
 #define ANA_TOBC
 #ifdef SEDIMENT
 # define ANA_SEDIMENT

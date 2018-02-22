@@ -150,6 +150,7 @@
       END IF
 
 #else
+
       IF (ANY(LBC(ieast,isTvar(:),ng)%acquire).and.                     &
      &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
         DO itrc=1,NT(ng)
@@ -193,6 +194,7 @@
           END DO
         END DO
       END IF
+
 #endif
 
       RETURN

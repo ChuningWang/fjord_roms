@@ -1,8 +1,8 @@
       SUBROUTINE ana_m2obc (ng, tile, model)
 !
-!! svn $Id: ana_m2obc.h 285 2008-12-17 22:52:04Z arango $
+!! svn $Id$
 !!======================================================================
-!! Copyright (c) 2002-2008 The ROMS/TOMS Group                         !
+!! Copyright (c) 2002-2017 The ROMS/TOMS Group                         !
 !!   Licensed under a MIT/X style license                              !
 !!   See License_ROMS.txt                                              !
 !=======================================================================
@@ -66,6 +66,7 @@
       USE mod_param
       USE mod_boundary
       USE mod_grid
+      USE mod_ncparam
       USE mod_scalars
 !
 !  Imported variable declarations.
@@ -101,9 +102,13 @@
 !
       integer :: i, j
       real(r8) :: angle, cff, fac, major, minor, omega, phase, val
-      real(r8) :: ramp
-#if defined FJORD
-      real(r8) :: uamp, vamp
+      real(r8) :: ramp, uamp, vamp
+#if defined ESTUARY_TEST || defined INLET_TEST
+      real(r8) :: my_area, my_flux, tid_flow, riv_flow, cff1, cff2,     &
+     &            model_flux
+#endif
+#if defined TEST_CHAN
+      real(r8) :: my_area, my_width
 #endif
 
 #include "set_bounds.h"
@@ -116,72 +121,96 @@
       fac=TANH((tdays(ng)-dstart)/1.0_r8)
       omega=2.0_r8*pi*time(ng)/(12.42_r8*3600.0_r8)  !  M2 Tide period
       uamp=0.0_r8
-      vamp=0.05_r8  ! Tidal amplitude
-      IF (EASTERN_EDGE) THEN
-        DO j=JstrR,JendR
-          BOUNDARY(ng)%ubar_east(j)=0.0_r8
+      vamp=0.5_r8  ! Tidal amplitude
+      IF (LBC(ieast,isUbar,ng)%acquire.and.                             &
+     &    LBC(ieast,isVbar,ng)%acquire.and.                             &
+     &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
+        DO j=JstrT,JendT
+          BOUNDARY(ng)%ubar_east(j)=fac*(vamp*COS(omega))
+!          BOUNDARY(ng)%ubar_east(j)=0.0_r8
         END DO
-        DO j=Jstr,JendR
+        DO j=JstrP,JendT
           BOUNDARY(ng)%vbar_east(j)=0.0_r8
         END DO
       END IF
-      IF (WESTERN_EDGE) THEN
-        DO j=JstrR,JendR
+
+      IF (LBC(iwest,isUbar,ng)%acquire.and.                             &
+     &    LBC(iwest,isVbar,ng)%acquire.and.                             &
+     &    DOMAIN(ng)%Western_Edge(tile)) THEN
+        DO j=JstrT,JendT
           BOUNDARY(ng)%ubar_west(j)=0.0_r8
         END DO
-        DO j=Jstr,JendR
+        DO j=JstrP,JendT
           BOUNDARY(ng)%vbar_west(j)=0.0_r8
         END DO
       END IF
-      IF (SOUTHERN_EDGE) THEN
-        DO i=Istr,IendR
+
+      IF (LBC(isouth,isUbar,ng)%acquire.and.                            &
+     &    LBC(isouth,isVbar,ng)%acquire.and.                            &
+     &    DOMAIN(ng)%Southern_Edge(tile)) THEN
+        DO i=IstrP,IendT
           BOUNDARY(ng)%ubar_south(i)=0.0_r8
         END DO
-        DO i=IstrR,IendR
+        DO i=IstrT,IendT
           BOUNDARY(ng)%vbar_south(i)=0.0_r8
         END DO
       END IF
-      IF (NORTHERN_EDGE) THEN
-        DO i=Istr,IendR
+
+      IF (LBC(inorth,isUbar,ng)%acquire.and.                            &
+     &    LBC(inorth,isVbar,ng)%acquire.and.                            &
+     &    DOMAIN(ng)%Northern_Edge(tile)) THEN
+        DO i=IstrP,IendT
           BOUNDARY(ng)%ubar_north(i)=0.0_r8
         END DO
-        DO i=IstrR,IendR
-          BOUNDARY(ng)%vbar_north(i)=fac*(vamp*COS(omega))
+        DO i=IstrT,IendT
+          BOUNDARY(ng)%vbar_north(i)=0.0_r8
         END DO
       END IF
 #else
-      IF (EASTERN_EDGE) THEN
-        DO j=JstrR,JendR
+      IF (LBC(ieast,isUbar,ng)%acquire.and.                             &
+     &    LBC(ieast,isVbar,ng)%acquire.and.                             &
+     &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
+        DO j=JstrT,JendT
           BOUNDARY(ng)%ubar_east(j)=0.0_r8
         END DO
-        DO j=Jstr,JendR
+        DO j=JstrP,JendT
           BOUNDARY(ng)%vbar_east(j)=0.0_r8
         END DO
       END IF
-      IF (WESTERN_EDGE) THEN
-        DO j=JstrR,JendR
+
+      IF (LBC(iwest,isUbar,ng)%acquire.and.                             &
+     &    LBC(iwest,isVbar,ng)%acquire.and.                             &
+     &    DOMAIN(ng)%Western_Edge(tile)) THEN
+        DO j=JstrT,JendT
           BOUNDARY(ng)%ubar_west(j)=0.0_r8
         END DO
-        DO j=Jstr,JendR
+        DO j=JstrP,JendT
           BOUNDARY(ng)%vbar_west(j)=0.0_r8
         END DO
       END IF
-      IF (SOUTHERN_EDGE) THEN
-        DO i=Istr,IendR
+
+      IF (LBC(isouth,isUbar,ng)%acquire.and.                            &
+     &    LBC(isouth,isVbar,ng)%acquire.and.                            &
+     &    DOMAIN(ng)%Southern_Edge(tile)) THEN
+        DO i=IstrP,IendT
           BOUNDARY(ng)%ubar_south(i)=0.0_r8
         END DO
-        DO i=IstrR,IendR
+        DO i=IstrT,IendT
           BOUNDARY(ng)%vbar_south(i)=0.0_r8
         END DO
       END IF
-      IF (NORTHERN_EDGE) THEN
-        DO i=Istr,IendR
+
+      IF (LBC(inorth,isUbar,ng)%acquire.and.                            &
+     &    LBC(inorth,isVbar,ng)%acquire.and.                            &
+     &    DOMAIN(ng)%Northern_Edge(tile)) THEN
+        DO i=IstrP,IendT
           BOUNDARY(ng)%ubar_north(i)=0.0_r8
         END DO
-        DO i=IstrR,IendR
+        DO i=IstrT,IendT
           BOUNDARY(ng)%vbar_north(i)=0.0_r8
         END DO
       END IF
 #endif
+
       RETURN
       END SUBROUTINE ana_m2obc_tile
