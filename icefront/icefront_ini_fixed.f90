@@ -1,10 +1,15 @@
-        SUBROUTINE ICEFRONT_INIT_FIXED()
-!
+    SUBROUTINE icefront_init_fixed()
+
 ! =========================================================
 !
 ! Initialize ICEFRONT parameters and variables.
 !
 ! =========================================================
-        implicit none
         USE mod_kinds
         USE mod_param
+
+        implicit none
+        
+        integer :: iter
+
+    END SUBROUTINE icefront_init_fixed
