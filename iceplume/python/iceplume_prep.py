@@ -1,5 +1,5 @@
 import numpy as np
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 # import netCDF4 as nc
 # from datetime import datetime
 
@@ -30,11 +30,14 @@ grd = pyroms.grid.get_ROMS_grid('fjord')
 zw = grd.vgrid.z_w[:][:, 1, 101]
 saltr = np.interp(zw, depth[::-1], salt[::-1])
 tempr = np.interp(zw, depth[::-1], temp[::-1])
+ur = 0.1*np.ones(len(zw))
+vr = 0.1*np.ones(len(zw))
 
-zw = np.linspace(-40., 0., 41)
+# zw = np.linspace(-40., 0., 41)
 
-# write to output file
-fh = open('./iceplume_test_input.txt', 'w')
+# write to input file
+fh = open('../iceplume_test_input.txt', 'w')
 for i in range(len(zw)):
-    fh.write('%f, %f, %f\n' % (zw[i], saltr[i], temp[i]))
+    fh.write('%f, %f, %f, %f, %f\n' % (zw[i], saltr[i], tempr[i],
+                                       ur[i], vr[i]))
 fh.close()
