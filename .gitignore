@@ -4,6 +4,8 @@
 *.out
 *.tiff
 *.o
+*.mod
+*.exe
 log.txt
 
 build/
