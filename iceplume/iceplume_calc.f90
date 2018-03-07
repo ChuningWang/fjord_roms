@@ -1,4 +1,7 @@
-SUBROUTINE ICEPLUME_CALC()
+! ==================================================================
+! This subroutine calculates profile of volume flux, melt rate, etc.
+! ==================================================================
+SUBROUTINE iceplume_calc
 
     USE mod_param_iceplume
     USE mod_param_iceplume_tracers
@@ -28,7 +31,6 @@ SUBROUTINE ICEPLUME_CALC()
 
     ! Create variables with temperature, salinity
     ! and velocity profiles for that column
-
     DO K = 1,Nr
         ! Tracers
         prProf(K) = zProfAbs(K)*rho_ref*g*1.0E-6  ! Pressure (dbar)
@@ -91,7 +93,6 @@ SUBROUTINE ICEPLUME_CALC()
         IF (conserveMass) THEN
             ! Scale output to compensate for entrainment lost in expanding of output layer
             ! i.e. so that there is no net flow over boundary
-
             negSum = 0.D0
             posSum = 0.D0
 
@@ -124,7 +125,7 @@ SUBROUTINE ICEPLUME_CALC()
     ENDIF
 
     ! ==================================================================
-    ! Claculate melt rates
+    ! Calculate melt rates
     DO K = 1, Nr
 
         ! Check if we are above sea bed

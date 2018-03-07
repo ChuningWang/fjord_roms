@@ -9,9 +9,11 @@ MODULE mod_param_iceplume_tracers
     integer :: iTracer  ! looping vars
 
     ! Profiles
-    real(r8), allocatable :: ptrPlume(:), ptrPlumeCum(:)
-    real(r8), allocatable :: ptrIni(:)
+    ! Input argument
     real(r8), allocatable :: ptrProf(:, :)
+    real(r8), allocatable :: ptrIni(:)
+    ! Output argument
+    real(r8), allocatable :: ptrPlume(:), ptrPlumeCum(:)
 
     ! ===================================================================
     CONTAINS
@@ -19,10 +21,10 @@ MODULE mod_param_iceplume_tracers
         SUBROUTINE allocate_param_iceplume_tracers
 
             ! Allocate the variables
-            allocate(ptrPlume(pTracersNum),    &
-                  &  ptrPlumeCum(pTracersNum), &
+            allocate(ptrProf(Nr, pTracersNum), &
                   &  ptrIni(pTracersNum),      &
-                  &  ptrProf(Nr, pTracersNum), &
+                  &  ptrPlume(pTracersNum),    &
+                  &  ptrPlumeCum(pTracersNum), &
                   & )
 
         END SUBROUTINE allocate_param_iceplume_tracers

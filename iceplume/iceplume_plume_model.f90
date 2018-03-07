@@ -1,5 +1,5 @@
 ! Program to calculate the plume shape, S, T, V etc.
-SUBROUTINE iceplume_plume_model()
+SUBROUTINE iceplume_plume_model
 
     USE mod_param_iceplume
     implicit none
@@ -97,11 +97,6 @@ SUBROUTINE iceplume_plume_model()
                            & ISTATE, IOPT, RWORK, LRW, IWORK, LIW, JEX, MF)
             ENDIF
 
-            ! ! Test code
-            ! ! Only test halfcone here
-            ! CALL DLSODE (HALFCONE, NEQ, Y, T, TOUT, ITOL, RTOL, ATOL, ITASK, &
-            !            & ISTATE, IOPT, RWORK, LRW, IWORK, LIW, JEX, MF)
-
             ! Test to see if neutral buoyancy has now been reached.
             ! If solver returns ISTATE = -1, then it has been unable to meet required tolerances
             ! at this level. This generally occurs because plume has reached neutral buoyancy and
@@ -173,10 +168,6 @@ SUBROUTINE iceplume_plume_model()
         aProfPlume(IOUT) = Y(5)
         mIntProfPlume(IOUT) = Y(6)
 
-        ! 300 format(2 I3, 4 F12.6)
-        ! write(*, 300) IOUT, ISTATE, rho_plume, rho_ambient, &
-        !             & tProfPlume(IOUT), sProfPlume(IOUT)
-
     ENDDO
 
     ! For diagnostic purpose
@@ -188,6 +179,8 @@ SUBROUTINE iceplume_plume_model()
     !                   & sProfPlume(K), aProfPlume(K), mIntProfPlume(K)
 END
 
+! =========================================================================
+! These subroutines are borrowed from Dr. Tom Cowton.
 ! =========================================================================
 
 SUBROUTINE  HALFCONE (NEQ, T, Y, YDOT)
@@ -409,6 +402,7 @@ END
 
 ! =========================================================================
 ! Obsolete subroutines
+! =========================================================================
 !
 ! SUBROUTINE RHO_TO_W(profn, profr, profw)
 ! 
