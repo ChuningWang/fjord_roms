@@ -1,40 +1,29 @@
 SUBROUTINE ICEPLUME_CALC()
 
     USE mod_param_iceplume
+    USE mod_param_iceplume_tracers
     implicit none
 
     ! ==================================================================
     ! LOCAL VARIABLES:
-    ! K :: loop indices
-    ! sProf, tProf, uProf, vProf :: salt, pot. temperature and
-    !                        uVel and vVel profiles
-    ! ptrProf  :: ambient ptracer profile
-    ! ptrPlumeCum :: cumulative quantity of ptracer in plume
-    ! ptrPlume :: quantity of ptracer in plume outflow
-    ! eps5     :: for thermodynamics (see pkg icefront)
-    ! maxDepth :: vertical extent of domain (m)
     ! plumeAreaInCell :: surface area of plume in contact with ice in that cell (m^2)
     ! negSum, posSum :: sum of negative and positive contributions to the plume volume
     ! posNegRatio    :: ratio of the above
     ! meanVel :: ice tangental velocity
-    ! rho_0 :: average density of seawater
-    ! delta_y :: grid cell resolution
     ! ==================================================================
 
-    integer :: K
     real(r8) :: plumeAreaInCell, maxDepth
     real(r8) :: negSum, posSum, posNegRatio
     real(r8) :: meanVel, depth
     real(r8) :: sw_temp, sw_ptmp
-    ! real(r8), parameter :: rho_0 = 1027.d0
 
     ! Read in the subglacial discharge for this cell
     IF (useSheetPlume) THEN
-        Q_sg = w_sg*r_sg*delta_y
+        QIni = wIni*rIni*delta_y
     ELSEIF (useConePlume) THEN
-        Q_sg = w_sg*((pi*r_sg**2.)/2.)
+        QIni = wIni*((pi*rIni**2.)/2.)
     ELSE
-        Q_sg = 0.d0
+        QIni = 0.d0
     ENDIF
 
     ! Create variables with temperature, salinity
@@ -43,21 +32,25 @@ SUBROUTINE ICEPLUME_CALC()
     DO K = 1,Nr
         ! Tracers
         prProf(K) = zProfAbs(K)*rho_ref*g*1.0E-6  ! Pressure (dbar)
-        ! sProf(K)  = salt(I,J,K,bi,bj)   ! Salinity
-        ! ptProf(K) = theta(I,J,K,bi,bj)  ! Potential Temperature
-        ! tProf(K)  = SW_TEMP(sProf(k),ptProf(k),prProf(k),0. _d 0) ! Temperature
         delta_z(K) = zProf(K+1) - zProf(K)
     ENDDO
 
     ! ==================================================================
-    ! Set iceDepth to the bottom layer
-    iceDepth = zProf(1)
-    DO K = 1,Nr+1
-        IF (zProf(K) .EQ. iceDepth) iceDepthK = K
-    ENDDO
+    ! Find iceDepthK
+    iceDepthK = 0
+    IF (iceDepth .GE. 0.d0) THEN
+        iceDepthK = 1
+    ELSE
+        DO K = 1, Nr+1
+            IF (zProf(K) .GE. iceDepth) THEN
+                iceDepthK = K
+                EXIT
+            ENDIF
+        ENDDO
+    ENDIF
 
     ! ==================================================================
-    IF (Q_sg .GT. 0) THEN
+    IF (QIni .GT. 0) THEN
         ! Run the plume model
         CALL ICEPLUME_PLUME_MODEL()
 
@@ -82,7 +75,7 @@ SUBROUTINE ICEPLUME_CALC()
         ! Even if plume is still buoyant, it cannot flow through the fjord surface
         volFlux(Nr+1) = 0.d0
         ! The initial volume flux is equal to runoff
-        volFlux(iceDepthK) = Q_sg
+        volFlux(iceDepthK) = QIni
 
         ! Calculate volume flux differential to give entrainment / extrainment
         ! First clear volfluxdiff
@@ -92,8 +85,7 @@ SUBROUTINE ICEPLUME_CALC()
         ENDDO
 
         DO K = iceDepthK, Nr
-            volFluxDiff(K) = volFlux(K+1) - volFlux(K)
-            ! write(*, '(E20.10)') volFluxDiff(K)
+            volFluxDiff(K) = -(volFlux(K+1) - volFlux(K))
         ENDDO
 
         IF (conserveMass) THEN
@@ -112,14 +104,14 @@ SUBROUTINE ICEPLUME_CALC()
             ENDDO
 
             IF ( negSum .NE. 0 ) THEN
-                posNegRatio = -posSum / negSum
+                posNegRatio = -negSum / posSum
                 DO K = 1,Nr
-                    IF ( volFluxDiff(K) .LT. 0 ) &
+                    IF ( volFluxDiff(K) .GT. 0 ) &
                         & volFluxDiff(K) = volFluxDiff(K) * posNegRatio
                 ENDDO
             ENDIF
         ENDIF
-    ELSE  ! (Q_sg .EQ. 0)
+    ELSE  ! (QIni .EQ. 0)
         ! If no subglacial output, then there is no plume
         DO k = 1,Nr
             rProfPlume(K) = 0.d0
@@ -147,7 +139,7 @@ SUBROUTINE ICEPLUME_CALC()
             ! the plrume model, and taken into account in the temperature and salinity of the
             ! plume outflow. It is useful though to have it available as a diagnostic.
             plumeAreaInCell = 0.d0
-            IF ((Q_sg .NE. 0) .AND. (useConePlume .OR. useSheetPlume)) THEN
+            IF ((QIni .NE. 0) .AND. (useConePlume .OR. useSheetPlume)) THEN
                 plumeAreaInCell = aProfPlume(K+1) - aProfPlume(K)
 
                 IF (plumeAreaInCell .GT. 0.0) THEN
@@ -176,7 +168,7 @@ SUBROUTINE ICEPLUME_CALC()
             ! Get average melt rate. This is useful for visualizing melt patterns and
             ! assessing overall melt rate of glacier.
             ! The following should apply to both conical and sheet plume models
-            IF (Q_sg .NE. 0) THEN
+            IF (QIni .NE. 0) THEN
                 plumeAreaInCell = aProfPlume(K+1) - aProfPlume(K)
                 IF (plumeAreaInCell .LE. delta_y*delta_z(K)) THEN
                     IF (plumeAreaInCell .LE. 0) THEN
@@ -224,16 +216,58 @@ SUBROUTINE ICEPLUME_CALC()
         ! Heat required to melt that much ice (W m^-2)
         heatFlux(K) = -fwFlux(K)*L
 
-        ! Compute tendencies (as for pkg/icefront in MITgcm)
-        icefront_TendT(K) = -heatFlux(K)*mass2rUnit/c_i
-        icefront_TendS(K) = fwFlux(K)*mass2rUnit*sProf(K)
+        ! ! Compute tendencies (as for pkg/icefront in MITgcm)
+        ! icefront_TendT(K) = -heatFlux(K)*mass2rUnit/c_i
+        ! icefront_TendS(K) = fwFlux(K)*mass2rUnit*sProf(K)
 
-        ! Scale by icefrontlength, which is the ratio of the horizontal length
-        ! of the ice front in each model grid cell divided by the grid cell area.
-        ! (icefrontlength = dy / dxdy = 1 / dx)
-        icefront_TendT(K) = icefront_TendT(K)/delta_x
-        icefront_TendS(K) = icefront_TendS(K)/delta_x
+        ! ! Scale by icefrontlength, which is the ratio of the horizontal length
+        ! ! of the ice front in each model grid cell divided by the grid cell area.
+        ! ! (icefrontlength = dy / dxdy = 1 / dx)
+        ! icefront_TendT(K) = icefront_TendT(K)/delta_x
+        ! icefront_TendS(K) = icefront_TendS(K)/delta_x
 
     ENDDO  ! K = 1, Nr
+
+
+    ! ==================================================================
+    ! For passive tracers
+    IF (useTracers) THEN
+
+        ! Clear local plume ptracer variables
+        DO iTracer = 1, pTracersNum
+            ptrPlume(iTracer)    = 0.d0
+            ptrPlumeCum(iTracer) = 0.d0
+        ENDDO
+
+        ! Add up total sum of each tracer in plume
+        DO K = iceDepthK, Nr
+            IF (volFluxDiff(K) .LT. 0.) THEN
+                DO iTracer = 1, pTracersNum
+                    ptrPlumeCum(iTracer) = &
+                        & ptrPlumeCum(iTracer) &
+                        & +(-volFluxDiff(K)*ptrProf(k,iTracer))
+                ENDDO
+            ENDIF
+        ENDDO
+
+        ! Add ptracers in runoff
+        IF (useInputTracers) THEN
+            DO iTracer = 1, pTracersNum
+                ptrPlumeCum(iTracer) = ptrPlumeCum(iTracer) + &
+                    & ptrIni(iTracer)*volFlux(iceDepthK)
+            ENDDO
+        ENDIF
+
+        ! Calculate concentration of tracer in outflow 
+        DO K = iceDepthK, Nr
+            IF (volFluxDiff(K) .GT. 0. ) THEN
+                DO iTracer = 1, pTracersNum
+                    ptrPlume(iTracer) = &
+                        & ptrPlumeCum(iTracer) / volFluxDiff(K)
+                ENDDO
+            ENDIF
+        ENDDO        
+
+    ENDIF
 
 END SUBROUTINE ICEPLUME_CALC

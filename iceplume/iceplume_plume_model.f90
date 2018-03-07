@@ -31,9 +31,6 @@ SUBROUTINE iceplume_plume_model()
     ! Plume model
     external JENKINS, HALFCONE, JEX
 
-    ! Looping vars
-    integer :: K
-
     ! ==================================================================
     ! For ODEPACK solver. See ODEPACK documentation and source code in Cowton et al. 2015.
     NEQ = 6
@@ -49,10 +46,10 @@ SUBROUTINE iceplume_plume_model()
 
     ! ==================================================================
     ! Initial conditions
-    Y(1) = r_sg  ! initial pume thickness (sheet model) or radius (halfcone model)
-    Y(2) = w_sg  ! initial vertical velocity
-    Y(3) = T_sg  ! initial temperature
-    Y(4) = S_sg  ! initial salinity
+    Y(1) = rIni  ! initial pume thickness (sheet model) or radius (halfcone model)
+    Y(2) = wIni  ! initial vertical velocity
+    Y(3) = TIni  ! initial temperature
+    Y(4) = SIni  ! initial salinity
     Y(5) = 0.0   ! integrated contact area
     Y(6) = 0.0   ! integrated melt rate
 
@@ -71,7 +68,7 @@ SUBROUTINE iceplume_plume_model()
     ENDDO
 
     ! Start at bottom of ice face
-    T = iceDepth
+    T = zProf(iceDepthK)
 
     ! Next point at which to retrieve values
     TOUT = zProf(iceDepthK+1)
@@ -83,6 +80,9 @@ SUBROUTINE iceplume_plume_model()
     sProfPlume(iceDepthK) = Y(4)
     aProfPlume(iceDepthK) = Y(5)
     mIntProfPlume(iceDepthK) = Y(6)
+
+    ! clean up some variables
+    plumeDepthK = 0
 
     ! Move up through water column from lowest layer
     DO IOUT = iceDepthK+1, Nr+1
@@ -131,6 +131,7 @@ SUBROUTINE iceplume_plume_model()
             ! write(*, '(i3, f12.6, f12.6)') ISTATE, rho_plume, rho_ambient
             IF (rho_plume .GT. rho_ambient) THEN
                 ISTATE = -1
+                plumeDepthK = K
                 ! write(*, '(i20)') 'Reached ISTATE=-1!'
             ENDIF
             ! If ISTATE is now < 0, then plume has reached neutral buoyancy 
@@ -178,13 +179,13 @@ SUBROUTINE iceplume_plume_model()
 
     ENDDO
 
+    ! For diagnostic purpose
     ! Write the plume profiles to file
     ! open(unit=16, file='iceplume_test_output.txt', action='write')
     ! 200 format(6 E20.10)
     ! DO K = 1, Nr+1
     !     write(16, 200)  rProfPlume(K), wProfPlume(K), tProfPlume(K), &
     !                   & sProfPlume(K), aProfPlume(K), mIntProfPlume(K)
-    ! ENDDO
 END
 
 ! =========================================================================
@@ -217,7 +218,6 @@ SUBROUTINE  HALFCONE (NEQ, T, Y, YDOT)
     rho_0 = RHO(Tambient, Sambient, T)
 
     ! Equations for Sb, Tb and mdot
-
     a = lambda1*(GamT*c_w-GamS*c_i)
 
     b = GamS*c_i*(lambda1*Y(4)-lambda2-lambda3*T+ &
@@ -252,20 +252,6 @@ SUBROUTINE  HALFCONE (NEQ, T, Y, YDOT)
     YDOT(5) = 2.*Y(1)
     YDOT(6) = 2.*Y(1)*mdot
 
-    ! Some diagnostic info
-    ! 210 format(A8, 6 E20.10)
-    ! 220 format(A8, 6 A20)
-    ! write(*, 220) ' ', 'Plume Radius', 'Plume Velocity', 'Plume Temp', &
-    !                  & 'Plume Salt', 'Plume Area', 'Melt'
-    ! write(*, 210) 'Y:', Y
-    ! write(*, 220) ' ', 'a', 'b', 'c', 'Sb', 'Tb', 'mdot'
-    ! write(*, 210) 'GROUP1:', a, b, c, Sb, Tb, mdot
-    ! write(*, 220) ' ', 'rho1', 'rho0', 'Tamb', 'Samb', 'T'
-    ! write(*, 210) 'GROUP2:', rho_1, rho_0, Tambient, Sambient, T
-    ! write(*, '(A1)') ' '
-    ! write(*, 210) 'YDOT:', YDOT
-    ! write(*, '(A1)') ' '
-
 END SUBROUTINE HALFCONE
 
 ! =========================================================================
@@ -298,7 +284,6 @@ SUBROUTINE  JENKINS (NEQ, T, Y, YDOT)
     rho_0 = RHO(Tambient, Sambient, T)
 
     ! Equations for Sb, Tb and mdot
-
     a = lambda1*(GamT*c_w-GamS*c_i)
 
     b = GamS*c_i*(lambda1*Y(4)-lambda2-lambda3*T+ &
@@ -334,27 +319,6 @@ SUBROUTINE  JENKINS (NEQ, T, Y, YDOT)
     YDOT(6) = delta_y * mdot  ! This is constant in sheet model
 
 END
-
-
-! =========================================================================
-
-! SUBROUTINE RHO_TO_W(profn, profr, profw)
-! 
-!     ! A quick program to extrapolate profiles from rho-points to w-points
-!     implicit none
-!     integer, parameter :: r8 = SELECTED_REAL_KIND(12,300)  ! 64-bit
-!     integer, intent(in) :: profn
-!     real(r8) :: profr(profn), profw(profn+1)
-! 
-!     integer :: K
-! 
-!     profw(1) = profr(1)
-!     profw(profn+1) = profr(profn)
-!     DO K = 2, profn
-!         profw(K) = 0.5d0*(profr(K-1)+profr(K))
-!     ENDDO
-! 
-! END SUBROUTINE RHO_TO_W
 
 ! =========================================================================
 
@@ -442,3 +406,24 @@ end
 SUBROUTINE jex()
     RETURN
 END
+
+! =========================================================================
+! Obsolete subroutines
+!
+! SUBROUTINE RHO_TO_W(profn, profr, profw)
+! 
+!     ! A quick program to extrapolate profiles from rho-points to w-points
+!     implicit none
+!     integer, parameter :: r8 = SELECTED_REAL_KIND(12,300)  ! 64-bit
+!     integer, intent(in) :: profn
+!     real(r8) :: profr(profn), profw(profn+1)
+! 
+!     integer :: K
+! 
+!     profw(1) = profr(1)
+!     profw(profn+1) = profr(profn)
+!     DO K = 2, profn
+!         profw(K) = 0.5d0*(profr(K-1)+profr(K))
+!     ENDDO
+! 
+! END SUBROUTINE RHO_TO_W

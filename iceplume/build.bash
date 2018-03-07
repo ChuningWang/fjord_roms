@@ -1,6 +1,7 @@
 rm *.o *.mod *.exe
 
 gfortran -c mod_param_iceplume.f90
+gfortran -c mod_param_iceplume_tracers.f90
 gfortran -c iceplume_meltrate.f90
 gfortran -c iceplume_plume_model.f90
 gfortran -c iceplume_calc.f90

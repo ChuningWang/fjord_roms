@@ -2,9 +2,9 @@
 SUBROUTINE ICEPLUME_WRITE(fileName)
 
     USE mod_param_iceplume
+
     implicit none
     character(*), intent(in) :: fileName
-    integer :: K
     
     open(unit=15, file='./zw_' // trim(fileName), action='write')
     200 format(7 E12.4)
@@ -21,7 +21,8 @@ SUBROUTINE ICEPLUME_WRITE(fileName)
                        & 'fwFlux', 'heatFlux', 'Entrainment', 'TendT', 'TendS'
     DO K = 1, Nr
         write(15, 210) zProfAbs(K), mProfAv(K), mProfPlume(K), mProf(K), &
-                     & fwFlux(K), heatFlux(K), volFluxDiff(K), icefront_TendT(K), icefront_TendS(K)
+                     & fwFlux(K), heatFlux(K), volFluxDiff(K)
+                     ! & fwFlux(K), heatFlux(K), volFluxDiff(K), icefront_TendT(K), icefront_TendS(K)
     ENDDO
     close(unit=15)
 

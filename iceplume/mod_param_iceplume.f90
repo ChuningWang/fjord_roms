@@ -8,19 +8,31 @@ MODULE mod_param_iceplume
     ! User defined variables and logical switches
     ! These parameters are read when coupling with GCMs.
     integer, parameter :: r8 = SELECTED_REAL_KIND(12,300)  ! 64-bit
-    ! logical :: applyIcefrontTendT  = .true.
-    ! logical :: applyIcefrontTendS  = .true.
-    ! logical :: usePlumeDiagnostics = .false.
+    logical :: usePlumeDiagnostics = .false.
     logical :: conserveMass        = .false.
     logical :: useConePlume        = .true.
     logical :: useSheetPlume       = .false.
-    integer, parameter :: Nr = 40            ! total number of layers
-    real(r8), parameter :: delta_y = 200.d0  ! grid cell resolution [m]
-    real(r8), parameter :: delta_x = 200.d0  ! grid cell resolution [m]
+    logical :: useTracers          = .true.
+    logical :: useInputTracers     = .true.
+
+    integer :: Nr = 40               ! total number of layers
+    real(r8) :: delta_y = 200.d0     ! grid cell resolution [m]
+    real(r8) :: delta_x = 200.d0     ! grid cell resolution [m]
+
+    ! Initial (discharge) conditions
+    real(r8) :: wIni = 1.0d0         ! initial vertical velocity [m s^-1]
+    real(r8) :: rIni = 1.0d2         ! initial radius [m]
+    real(r8) :: TIni = 1.0d-3        ! initial temp [degC]
+    real(r8) :: SIni = 1.0d-3        ! initial salt [PSU]
+    real(r8) :: QIni                 ! subglacial discharge [m^3 s^-1]
+
+    real(r8) :: iceDepth = 1.d0      ! ice bottom depth [m], if iceDepth is positive,
+                                     ! then the ice bottom depth is always equal to
+                                     ! the water depth (iceDepthK = 1)
     ! ====================================================================
 
     ! Model parameters
-    real(r8), parameter :: pi = 4.0d0*atan(1.0d0)  ! Pi
+    real(r8), parameter :: pi            = 4.0d0*atan(1.0d0)    ! Pi
 
     ! For plume model
     real(r8), parameter :: E_0           = 1.d-1     ! entrainment rate
@@ -40,23 +52,16 @@ MODULE mod_param_iceplume
     real(r8), parameter :: Cd            = 2.50d-3   ! ice-plume drag coefficient
     real(r8), parameter :: backgroundVel = 1.d-2     ! background velocity [m s^-1]
 
-    real(r8), parameter :: T_sg          = 1.0d-3    ! initial temp [degC]
-    real(r8), parameter :: S_sg          = 1.0d-3    ! initial salt [PSU]
-    real(r8), parameter :: w_sg          = 1.0d0     ! initial vertical velocity [m s^-1]
-    real(r8), parameter :: r_sg          = 1.0d2     ! initial radius [m]
-    real(r8) :: Q_sg                                 ! subglacial discharge [m^3 s^-1]
-
-    integer :: iceDepthK  ! ice bottom layer index
-    real(r8) :: iceDepth  ! ice bottom depth
-
-    ! For iceplume_calc
-    real(r8), dimension(Nr) :: delta_z       ! vertical resolution [m]
-    real(r8), dimension(Nr+1) :: volFlux     ! volume flux [m^3 s^-1]
-    real(r8), dimension(Nr) :: volFluxDiff   ! entrainment [m^3 s^-1]
+    integer :: iceDepthK                             ! ice bottom layer index [sigma points]
+    integer :: plumeDepthK                           ! neutral buoyancy plume layer index [sigma points]
 
     ! Taken from pkg/icefront
-    real(r8), parameter :: mass2rUnit      = 1.d0/rho_ref  ! reciprocal density [kg^-1 m^3]
+    real(r8), parameter :: mass2rUnit = 1.d0/rho_ref  ! reciprocal density [kg^-1 m^3]
 
+    ! Looping vars
+    integer :: K  ! vertical layers
+
+    ! ====================================================================
     ! Profiles
     ! ====================================================================
     ! AT RHO POINTS
@@ -73,6 +78,9 @@ MODULE mod_param_iceplume
     ! heatFlux - heat flux [W m^-2]
     ! icefront_TendT - a tendency term calculated in MITgcm.
     ! icefront_TendS - a tendency term calculated in MITgcm.
+    ! ptrProf - passive tracer concentration
+    ! delta_z - veritcal resolution [m]
+    ! volFluxDiff - entrainment rate [m^3 s^-1]
     !
     ! AT OMEGA POINTS
     ! zProf - depth [m]
@@ -82,11 +90,35 @@ MODULE mod_param_iceplume
     ! sProfPlume - salinity of plume [PSU]
     ! aProfPlume - area of plume [m^2]
     ! mIntProfPlume - area integrated melt of plume [m^3 s^-1]
+    ! volFLux - vertical volume flux [m^3 s^-1]
     ! ====================================================================
-    real(r8), dimension(Nr) :: sProf, tProf, vProf, wProf, zProfAbs, &
-                             & prProf, mProfAv, mProfPlume, mProf
-    real(r8), dimension(Nr) :: fwFlux, heatFlux, icefront_TendT, icefront_TendS
-    real(r8), dimension(Nr+1) :: zProf, rProfPlume, wProfPlume, &
-                               & tProfPlume, sProfPlume, aProfPlume, mIntProfPlume
+    real(r8), dimension(:), allocatable :: sProf, tProf, vProf, wProf,     &
+                                         & zProfAbs, prProf,               &
+                                         & mProfAv, mProfPlume, mProf,     &
+                                         & fwFlux, heatFlux,               &
+                                         ! & icefront_TendT, icefront_TendS, &
+                                         & zProf, rProfPlume, wProfPlume,  &
+                                         & tProfPlume, sProfPlume,         &
+                                         & aProfPlume, mIntProfPlume,      &
+                                         & delta_z, volFlux, volFluxDiff
+
+    ! ===================================================================
+    CONTAINS
+
+        SUBROUTINE allocate_param_iceplume
+
+            ! Allocate profiles
+            allocate(sProf(Nr), tProf(Nr), vProf(Nr), wProf(Nr),      &
+                  &  zProfAbs(Nr), prProf(Nr),                        &
+                  &  mProfAv(Nr), mProfPlume(Nr), mProf(Nr),          &
+                  &  fwFlux(Nr), heatFlux(Nr),                        &
+                  ! &  iceFront_TendT(Nr), icefront_TendS(Nr),          &
+                  &  zProf(Nr+1), rProfPlume(Nr+1), wProfPlume(Nr+1), &
+                  &  tProfPlume(Nr+1), sProfPlume(Nr+1),              &
+                  &  aProfPlume(Nr+1), mIntProfPlume(Nr+1),           &
+                  &  delta_z(Nr), volFlux(Nr+1), volFLuxDiff(Nr),     &
+                  & )
+
+        END SUBROUTINE allocate_param_iceplume
 
 END

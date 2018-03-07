@@ -30,14 +30,21 @@ grd = pyroms.grid.get_ROMS_grid('fjord')
 zw = grd.vgrid.z_w[:][:, 1, 101]
 saltr = np.interp(zw, depth[::-1], salt[::-1])
 tempr = np.interp(zw, depth[::-1], temp[::-1])
-ur = 0.1*np.ones(len(zw))
 vr = 0.1*np.ones(len(zw))
+wr = 0.1*np.ones(len(zw))
 
-# zw = np.linspace(-40., 0., 41)
+ptr1 = 0.1*np.ones(len(zw))
+ptr2 = 0.0*np.ones(len(zw))
+ptr3 = 0.2*np.ones(len(zw))
 
 # write to input file
 fh = open('../iceplume_test_input.txt', 'w')
 for i in range(len(zw)):
     fh.write('%f, %f, %f, %f, %f\n' % (zw[i], saltr[i], tempr[i],
-                                       ur[i], vr[i]))
+                                       vr[i], wr[i]))
+fh.close()
+
+fh = open('../iceplume_test_input_tracers.txt', 'w')
+for i in range(len(zw)):
+    fh.write('%f, %f, %f\n' % (ptr1[i], ptr2[i], ptr3[i]))
 fh.close()
