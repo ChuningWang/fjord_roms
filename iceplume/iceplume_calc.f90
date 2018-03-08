@@ -22,7 +22,7 @@ SUBROUTINE iceplume_calc
 
     ! Read in the subglacial discharge for this cell
     IF (useSheetPlume) THEN
-        QIni = wIni*rIni*delta_y
+        QIni = wIni*rIni*dy
     ELSEIF (useConePlume) THEN
         QIni = wIni*((pi*rIni**2.)/2.)
     ELSE
@@ -34,7 +34,7 @@ SUBROUTINE iceplume_calc
     DO K = 1,Nr
         ! Tracers
         prProf(K) = zProfAbs(K)*rho_ref*g*1.0E-6  ! Pressure (dbar)
-        delta_z(K) = zProf(K+1) - zProf(K)
+        dz(K) = zProf(K+1) - zProf(K)
     ENDDO
 
     ! ==================================================================
@@ -62,7 +62,7 @@ SUBROUTINE iceplume_calc
             IF (K .GT. iceDepthK) THEN
                 ! assuming specified plume horizontal extent (for sheet flow)...
                 IF (useSheetPlume) THEN
-                    volFlux(K) = rProfPlume(K)*wProfPlume(K)*delta_y
+                    volFlux(K) = rProfPlume(K)*wProfPlume(K)*dy
                 ELSEIF (useConePlume) THEN
                     volFlux(K) = pi*(rProfPlume(K)**2)*wProfPlume(K)/2.
                 ELSE
@@ -171,7 +171,7 @@ SUBROUTINE iceplume_calc
             ! The following should apply to both conical and sheet plume models
             IF (QIni .NE. 0) THEN
                 plumeAreaInCell = aProfPlume(K+1) - aProfPlume(K)
-                IF (plumeAreaInCell .LE. delta_y*delta_z(K)) THEN
+                IF (plumeAreaInCell .LE. dy*dz(K)) THEN
                     IF (plumeAreaInCell .LE. 0) THEN
                         ! If there is no plume in cell, then the melt rate is
                         ! equal to the background melt rate.
@@ -179,20 +179,20 @@ SUBROUTINE iceplume_calc
                     ELSE
                         ! If there is a plume in cell, calculate average melt rate
                         mProfAv(K) = (mProfPlume(K)*plumeAreaInCell &
-                            & +mProf(K)*(delta_y*delta_z(K)-plumeAreaInCell)) / &
-                            & (delta_y * delta_z(K))
+                            & +mProf(K)*(dy*dz(K)-plumeAreaInCell)) / &
+                            & (dy * dz(K))
 
                         ! Scale down background melt rate to account for area occupied by plume
                         ! (necessary so that tendency terms aren't over estimated)
 
                         mProf(K) = mProf(K)*(1-plumeAreaInCell / &
-                            & (delta_y*delta_z(K)))
+                            & (dy*dz(K)))
                     ENDIF
-                ELSE  ! plumeAreaInCell .GE. delta_y*delta_z(K)
+                ELSE  ! plumeAreaInCell .GE. dy*dz(K)
                     ! If the plume contact area is larger than the cell area, we
                     ! assume there is no background melting
                     mProfAv(K) = mProfPlume(K)*plumeAreaInCell / &
-                        & (delta_y*delta_z(K))
+                        & (dy*dz(K))
                     mProf(K) = 0.d0
                 ENDIF
             ELSE  ! not coneplume or sheet plume
@@ -224,8 +224,8 @@ SUBROUTINE iceplume_calc
         ! ! Scale by icefrontlength, which is the ratio of the horizontal length
         ! ! of the ice front in each model grid cell divided by the grid cell area.
         ! ! (icefrontlength = dy / dxdy = 1 / dx)
-        ! icefront_TendT(K) = icefront_TendT(K)/delta_x
-        ! icefront_TendS(K) = icefront_TendS(K)/delta_x
+        ! icefront_TendT(K) = icefront_TendT(K)/dx
+        ! icefront_TendS(K) = icefront_TendS(K)/dx
 
     ENDDO  ! K = 1, Nr
 

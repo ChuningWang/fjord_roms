@@ -7,15 +7,31 @@ PROGRAM iceplume
 
     implicit none
 
+    ! Input and output variables
     character(100) :: fileName
     real(r8), dimension(:), allocatable :: zprofw, sprofw, tprofw, vprofw, wprofw
     real(r8), allocatable :: ptrprofw(:, :)
+
+    ! Model input parameters
+    Nr = 40
+    dy = 200.d0
+    dx = 200.d0
+    iceDepth = 1.0d0
+
+    wIni = 1.0d0
+    rIni = 1.0d2
+    TIni = 1.0d-3
+    SIni = 1.0d-3
+
+    ! Output file name
+    fileName = 'iceplume_output.txt'
+
+    ! Allocate variables
     allocate(zprofw(Nr+1), sprofw(Nr+1), tprofw(Nr+1), vprofw(Nr+1), wprofw(Nr+1))
     allocate(ptrprofw(Nr+1, pTracersNum))
+
     CALL allocate_param_iceplume
     CALL allocate_param_iceplume_tracers
-
-    fileName = 'iceplume_output.txt'
 
     print *, "IcePlume test run."
 
@@ -59,6 +75,5 @@ PROGRAM iceplume
 
     CALL iceplume_calc()
     CALL iceplume_write(fileName)
-    ! CALL iceplume_plume_model()
 
 END PROGRAM iceplume

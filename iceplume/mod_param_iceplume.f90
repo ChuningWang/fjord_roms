@@ -15,19 +15,18 @@ MODULE mod_param_iceplume
     logical :: useTracers          = .true.
     logical :: useInputTracers     = .true.
 
-    ! integer :: Nr = 40               ! total number of layers
-    ! real(r8) :: delta_y = 200.d0     ! grid cell resolution [m]
-    ! real(r8) :: delta_x = 200.d0     ! grid cell resolution [m]
-    ! real(r8) :: iceDepth = 1.d0      ! ice bottom depth [m], if iceDepth is positive,
-    !                                  ! then the ice bottom depth is always equal to
-    !                                  ! the water depth (iceDepthK = 1)
+    integer :: Nr           ! total number of layers
+    real(r8) :: dy          ! grid cell resolution [m]
+    real(r8) :: dx          ! grid cell resolution [m]
+    real(r8) :: iceDepth    ! ice bottom depth [m], if iceDepth is positive,
+                            ! then the ice bottom depth is always equal to
+                            ! the water depth (iceDepthK = 1)
 
-    ! ! Initial (discharge) conditions
-    ! real(r8) :: wIni = 1.0d0         ! initial vertical velocity [m s^-1]
-    ! real(r8) :: rIni = 1.0d2         ! initial radius [m]
-    ! real(r8) :: TIni = 1.0d-3        ! initial temp [degC]
-    ! real(r8) :: SIni = 1.0d-3        ! initial salt [PSU]
-    ! real(r8) :: QIni                 ! subglacial discharge [m^3 s^-1]
+    ! Initial (discharge) conditions
+    real(r8) :: wIni        ! initial vertical velocity [m s^-1]
+    real(r8) :: rIni        ! initial radius [m]
+    real(r8) :: TIni        ! initial temp [degC]
+    real(r8) :: SIni        ! initial salt [PSU]
 
     ! ====================================================================
 
@@ -54,6 +53,7 @@ MODULE mod_param_iceplume
 
     integer :: iceDepthK                             ! ice bottom layer index [sigma points]
     integer :: plumeDepthK                           ! neutral buoyancy plume layer index [sigma points]
+    real(r8) :: QIni                                 ! subglacial discharge [m^3 s^-1]
 
     ! Taken from pkg/icefront
     ! real(r8), parameter :: mass2rUnit = 1.d0/rho_ref  ! reciprocal density [kg^-1 m^3]
@@ -102,7 +102,7 @@ MODULE mod_param_iceplume
                                          & volFluxDiff, fwFlux, heatFlux
 
     ! Internal use only
-    real(r8), dimension(:), allocatable :: zProfAbs, prProf, delta_z, volFLux
+    real(r8), dimension(:), allocatable :: zProfAbs, prProf, dz, volFLux
 
     ! ===================================================================
     CONTAINS
@@ -116,7 +116,7 @@ MODULE mod_param_iceplume
                   &  wProfPlume(Nr+1), aProfPlume(Nr+1), mIntProfPlume(Nr+1), &
                   &  mProfAv(Nr), mProfPlume(Nr), mProf(Nr),                  &
                   &  volFLuxDiff(Nr), fwFlux(Nr), heatFlux(Nr),               &
-                  &  delta_z(Nr), zProfAbs(Nr), prProf(Nr), volFlux(Nr+1),    &
+                  &  zProfAbs(Nr), prProf(Nr), dz(Nr), volFlux(Nr+1),         &
                   & )
 
         END SUBROUTINE allocate_param_iceplume

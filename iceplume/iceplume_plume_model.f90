@@ -308,8 +308,8 @@ SUBROUTINE  JENKINS (NEQ, T, Y, YDOT)
     &  *(E_0+mdot/Y(2))
 
     ! along-plume integrated contact area and melt rate
-    YDOT(5) = delta_y  ! This is constant in sheet model
-    YDOT(6) = delta_y * mdot  ! This is constant in sheet model
+    YDOT(5) = dy  ! This is constant in sheet model
+    YDOT(6) = dy * mdot  ! This is constant in sheet model
 
 END
 
