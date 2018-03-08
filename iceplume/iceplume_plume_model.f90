@@ -1,7 +1,7 @@
 ! Program to calculate the plume shape, S, T, V etc.
 SUBROUTINE iceplume_plume_model
 
-    USE mod_param_iceplume
+    USE mod_iceplume
     implicit none
 
     real(r8), dimension(Nr) :: proftemp
@@ -185,7 +185,7 @@ END
 
 SUBROUTINE  HALFCONE (NEQ, T, Y, YDOT)
 
-    USE mod_param_iceplume
+    USE mod_iceplume
     implicit none
 
     integer :: NEQ
@@ -251,7 +251,7 @@ END SUBROUTINE HALFCONE
 
 SUBROUTINE  JENKINS (NEQ, T, Y, YDOT)
 
-    USE mod_param_iceplume
+    USE mod_iceplume
     implicit none
 
     integer ::  NEQ

@@ -18,6 +18,7 @@ rtime = np.array([0., 366.])
 rtrs = np.ones((2, nr))*50.
 rtemp = np.ones((2, grd.vgrid.N, nr))*10.
 rsalt = np.ones((2, grd.vgrid.N, nr))*0.
+rdye1 = np.ones((2, grd.vgrid.N, nr))*1.
 
 # v_shape = np.zeros((grd.vgrid.N, nr))
 # v_shape[-1, :] = 1
@@ -76,4 +77,9 @@ salt = fout.createVariable('river_salt', 'f8', ('river_time', 's_rho', 'river'))
 salt.long_name = 'river runoff salinity'
 salt.time = 'river_time'
 fout.variables['river_salt'][:] = rsalt
+
+dye1 = fout.createVariable('river_dye_01', 'f8', ('river_time', 's_rho', 'river'))
+dye1.long_name = 'river runoff dye 01 concentration'
+dye1.time = 'river_time'
+fout.variables['river_dye_01'][:] = rdye1
 fout.close()

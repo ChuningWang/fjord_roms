@@ -1,7 +1,7 @@
 ! This program write the computed plume info to a file.
 SUBROUTINE ICEPLUME_WRITE(fileName)
 
-    USE mod_param_iceplume
+    USE mod_iceplume
 
     implicit none
     character(*), intent(in) :: fileName

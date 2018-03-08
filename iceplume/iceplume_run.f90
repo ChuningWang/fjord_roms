@@ -2,8 +2,8 @@
 
 PROGRAM iceplume
 
-    USE mod_param_iceplume
-    USE mod_param_iceplume_tracers
+    USE mod_iceplume
+    USE mod_iceplume_tracers
 
     implicit none
 
@@ -23,6 +23,8 @@ PROGRAM iceplume
     TIni = 1.0d-3
     SIni = 1.0d-3
 
+    pTracersNum = 1
+
     ! Output file name
     fileName = 'iceplume_output.txt'
 
@@ -30,8 +32,8 @@ PROGRAM iceplume
     allocate(zprofw(Nr+1), sprofw(Nr+1), tprofw(Nr+1), vprofw(Nr+1), wprofw(Nr+1))
     allocate(ptrprofw(Nr+1, pTracersNum))
 
-    CALL allocate_param_iceplume
-    CALL allocate_param_iceplume_tracers
+    CALL allocate_iceplume
+    CALL allocate_iceplume_tracers
 
     print *, "IcePlume test run."
 

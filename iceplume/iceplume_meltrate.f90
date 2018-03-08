@@ -1,7 +1,7 @@
 SUBROUTINE ICEPLUME_MELTRATE(temperature, salinity, velocity, depth, &
                            & mdot)
 
-    USE mod_param_iceplume
+    USE mod_iceplume
     implicit none
 
     real(r8) :: temperature, salinity, velocity, &

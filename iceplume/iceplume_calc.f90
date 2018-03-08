@@ -3,8 +3,8 @@
 ! ==================================================================
 SUBROUTINE iceplume_calc
 
-    USE mod_param_iceplume
-    USE mod_param_iceplume_tracers
+    USE mod_iceplume
+    USE mod_iceplume_tracers
     implicit none
 
     ! ==================================================================
