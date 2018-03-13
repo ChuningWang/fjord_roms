@@ -15,10 +15,9 @@ SUBROUTINE iceplume_calc
     ! meanVel :: ice tangental velocity
     ! ==================================================================
 
-    real(r8) :: plumeAreaInCell, maxDepth
     real(r8) :: negSum, posSum, posNegRatio
     real(r8) :: meanVel, depth
-    real(r8) :: sw_temp, sw_ptmp
+    real(r8) :: plumeAreaInCell
 
     ! Read in the subglacial discharge for this cell
     IF (useSheetPlume) THEN
@@ -29,18 +28,26 @@ SUBROUTINE iceplume_calc
         QIni = 0.d0
     ENDIF
 
-    ! Create variables with temperature, salinity
+    ! Create variables with temperature, salinity, density
     ! and velocity profiles for that column
-    DO K = 1,Nr
+    DO K = 1, Nr
         ! Tracers
         prProf(K) = zProfAbs(K)*rho_ref*g*1.0E-6  ! Pressure (dbar)
+        ! Delta Z
         dz(K) = zProf(K+1) - zProf(K)
     ENDDO
 
+    ! ! Prepare other profiles
+    ! DO K = 1, Nr
+    !     tendT = 0.d0
+    !     tendS = 0.d0
+    ! ENDDO
+
     ! ==================================================================
     ! Find iceDepthK
+    ! ==================================================================
     iceDepthK = 0
-    IF (iceDepth .GE. 0.d0) THEN
+    IF (iceDepth .GE. 0) THEN
         iceDepthK = 1
     ELSE
         DO K = 1, Nr+1
@@ -51,6 +58,8 @@ SUBROUTINE iceplume_calc
         ENDDO
     ENDIF
 
+    ! ==================================================================
+    ! Use plume model to calculate T, S, & flux in plume
     ! ==================================================================
     IF (QIni .GT. 0) THEN
         ! Run the plume model
@@ -81,7 +90,6 @@ SUBROUTINE iceplume_calc
 
         ! Calculate volume flux differential to give entrainment / extrainment
         ! First clear volfluxdiff
-
         DO K = 1,Nr
             volFluxDiff(K) = 0.d0
         ENDDO
@@ -126,6 +134,8 @@ SUBROUTINE iceplume_calc
 
     ! ==================================================================
     ! Calculate melt rates
+    ! ==================================================================
+
     DO K = 1, Nr
 
         ! Check if we are above sea bed
@@ -135,10 +145,14 @@ SUBROUTINE iceplume_calc
             mProfPlume(K) = 0.d0
             mProf(K) = 0.d0
         ELSE
+
+            ! ==================================================================
             ! If there is a plume in that cell, then need to calculate plume melt rate
             ! distinct to background melt rate. Plume melt rate is already encorporated in 
             ! the plrume model, and taken into account in the temperature and salinity of the
             ! plume outflow. It is useful though to have it available as a diagnostic.
+            ! ==================================================================
+
             plumeAreaInCell = 0.d0
             IF ((QIni .NE. 0) .AND. (useConePlume .OR. useSheetPlume)) THEN
                 plumeAreaInCell = aProfPlume(K+1) - aProfPlume(K)
@@ -160,11 +174,12 @@ SUBROUTINE iceplume_calc
             ! Velocities are calculated at cell faces - find averages for cell centres.
             ! Does not include velocity perpendicular to ice - this differs depending on 
             ! orientation of ice front
+            ! ==================================================================
+
             meanVel = ((vProf(K))**2. + (wProf(K))**2.)**0.5
             depth = 0.5d0*(zProf(K)+zProf(K+1))
             CALL ICEPLUME_MELTRATE(tProf(K), sProf(K), meanVel, depth, &
-                                 & mProf(K))
-            ! write(*, '(E20.10)') mProf(K)
+                                 & mProf(K), SbProf(K), TbProf(K))
 
             ! Get average melt rate. This is useful for visualizing melt patterns and
             ! assessing overall melt rate of glacier.
@@ -201,37 +216,56 @@ SUBROUTINE iceplume_calc
                 mProfAv(K) = mProf(K)
             ENDIF  ! plume type
         ENDIF  ! above or below sea bed
+    ENDDO
 
-        ! ==================================================================
-        ! Tendencies
-        ! These are applied in cells where there is no plume.
-        ! The idea is that in these areas there are likely to be local subgrid convection cells.
-        ! As such, it is most realistic to apply changes in T and S to ice edge cell.
-        ! Where there is a plume, products of melt are transported upwards so no local changes applied.
-        ! The thermodynamics in this section are taken from pkg/icefront in MITgcm.
-        ! Tendencies are applied in S/R EXTERNAL_FORCING
+    ! ==================================================================
+    ! Calculate thermodynamics
+    ! ==================================================================
+    ! Calculate the rate of temperature decrease in grid cells due to backgroud melting
+    DO K = 1, Nr
 
-        ! To convert from melt rate (m s^-1) to freshwater flux (kg m^-2 s^-1)
-        fwFlux(K) = -mProf(K)*rho_ice
+        ! Check if above ice depth
+        IF (K .LT. iceDepthK) THEN
 
-        ! Heat required to melt that much ice (W m^-2)
-        heatFlux(K) = -fwFlux(K)*L
+            ! Below the ice depth, there is no heat and freshwater flux
+            fwFlux(K) = 0.d0
+            heatFlux(K) = 0.d0
+            tendT(K) = 0.d0
+            tendS(K) = 0.d0
 
-        ! ! Compute tendencies (as for pkg/icefront in MITgcm)
-        ! icefront_TendT(K) = -heatFlux(K)*mass2rUnit/c_i
-        ! icefront_TendS(K) = fwFlux(K)*mass2rUnit*sProf(K)
+        ELSE
 
-        ! ! Scale by icefrontlength, which is the ratio of the horizontal length
-        ! ! of the ice front in each model grid cell divided by the grid cell area.
-        ! ! (icefrontlength = dy / dxdy = 1 / dx)
-        ! icefront_TendT(K) = icefront_TendT(K)/dx
-        ! icefront_TendS(K) = icefront_TendS(K)/dx
+            ! To convert from melt rate (m s^-1) to freshwater flux (kg m^-2 s^-1)
+            fwFlux(K) = -mProf(K)*rho_ice
 
-    ENDDO  ! K = 1, Nr
+            ! Latent heat required to melt that much ice (W m^-2)
+            heatFlux(K) = -fwFlux(K)*L
+
+            ! If there is a plume, some of the freshwater is entrained into the plume.
+            ! Scale fwFlux accordingly
+            plumeAreaInCell = aProfPlume(K+1) - aProfPlume(K)
+            IF (plumeAreaInCell .GT. 0) THEN
+                fwFlux(K) = fwFlux(K)*(1-meltEnt)
+            ENDIF
+
+            ! Compute tendencies (as for pkg/icefront in MITgcm)
+            tendT(K) = -heatFlux(K)/c_i/rho_ref
+            tendS(K) = fwFlux(K)*sProf(K)/rho_ref
+
+            ! Scale by icefrontlength, which is the ratio of the horizontal length
+            ! of the ice front in each model grid cell divided by the grid cell area.
+            ! (icefrontlength = dy / dxdy = 1 / dx)
+            tendT(K) = tendT(K)/dx
+            tendS(K) = tendS(K)/dx
+
+        ENDIF
+
+    ENDDO
 
 
     ! ==================================================================
-    ! For passive tracers
+    ! Calculate passive tracers
+    ! ==================================================================
     IF (useTracers) THEN
 
         ! Clear local plume ptracer variables

@@ -1,12 +1,13 @@
 SUBROUTINE ICEPLUME_MELTRATE(temperature, salinity, velocity, depth, &
-                           & mdot)
+                           & mdot, Sb, Tb)
 
     USE mod_iceplume
     implicit none
 
     real(r8) :: temperature, salinity, velocity, &
               & depth, absVelocity
-    real(r8) :: a, b, c, tb, sb, mdot
+    real(r8) :: a, b, c
+    real(r8), intent(inout) :: mdot, Sb, Tb
 
     ! Routine can't cope with zero velocity.
     ! Unlikely to occur anyway with currents, waves, convection etc.
@@ -27,8 +28,8 @@ SUBROUTINE ICEPLUME_MELTRATE(temperature, salinity, velocity, depth, &
 
     c = GamS*salinity*(c_i*(lambda2+lambda3*depth-iceTemp)+L)
 
-    Sb   = (1./(2.*a))*(-b-((b**2.-4.*a*c)**0.5)) !Sb
-    Tb   = lambda1*Sb+lambda2+lambda3*depth !Tb
+    Sb   = (1./(2.*a))*(-b-((b**2.-4.*a*c)**0.5))      ! Sb
+    Tb   = lambda1*Sb+lambda2+lambda3*depth            ! Tb
     mdot = GamS*(Cd**0.5)*absVelocity*(salinity-Sb)/Sb ! mdot
 
 END

@@ -85,7 +85,8 @@ export   ROMS_APPLICATION=FJORD
 # Set a local environmental variable to define the path to the directories
 # where all this project's files are kept.
 
-export        MY_ROOT_DIR=/glade/u/home/chuning/git/roms
+# export        MY_ROOT_DIR=/glade/u/home/chuning/git/roms
+export        MY_ROOT_DIR=/Users/CnWang/git/roms_rutgers
 export     MY_PROJECT_DIR=${PWD}
 
 # The path to the user's local current ROMS source code.
@@ -383,7 +384,7 @@ fi
 
 # Put the binary to execute in the following directory.
 
- export            BINDIR=/glade/scratch/chuning/tmpdir_fjord
+ export            BINDIR=/Users/CnWang/temp_build
 
 # Put the f90 files in a project specific Build directory to avoid conflict
 # with other projects.

@@ -13,15 +13,18 @@ PROGRAM iceplume
     real(r8), allocatable :: ptrprofw(:, :)
 
     ! Model input parameters
+    Dt = 30.d0
     Nr = 40
     dy = 200.d0
     dx = 200.d0
     iceDepth = 1.0d0
 
-    wIni = 1.0d0
-    rIni = 1.0d2
+    wIni = 1.0d2
+    rIni = 1.0d0
     TIni = 1.0d-3
     SIni = 1.0d-3
+
+    meltEnt = 0.5d0
 
     pTracersNum = 1
 
@@ -39,7 +42,7 @@ PROGRAM iceplume
 
     ! ==================================================================
     ! read in profiles for testing
-    open(unit=15, file='iceplume_test_input.txt', action='read')
+    open(unit=15, file='./data/iceplume_test_input.txt', action='read')
     100 format(5 F12.6)
     DO K = 1, Nr+1
         read(15, 100)  zprofw(K), sprofw(K), tprofw(K), vprofw(K), wprofw(K)
@@ -60,7 +63,7 @@ PROGRAM iceplume
 
     IF (useTracers) THEN
         ! Read in tracer concentration
-        open(unit=15, file='iceplume_test_input_tracers.txt', action='read')
+        open(unit=15, file='./data/iceplume_test_input_tracers.txt', action='read')
         200 format(999 F12.6)
         DO K = 1, Nr+1
             read(15, 200)  ptrprofw(K, :)
