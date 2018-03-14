@@ -86,7 +86,7 @@ export   ROMS_APPLICATION=FJORD
 # where all this project's files are kept.
 
 # export        MY_ROOT_DIR=/glade/u/home/chuning/git/roms
-export        MY_ROOT_DIR=/Users/CnWang/git/roms_rutgers
+export        MY_ROOT_DIR=/home/cw686/git/roms
 export     MY_PROJECT_DIR=${PWD}
 
 # The path to the user's local current ROMS source code.
@@ -131,16 +131,16 @@ export     MY_PROJECT_DIR=${PWD}
 # out. Any string value (including off) will evaluate to TRUE in
 # conditional if-statements.
 
-    export           USE_MPI=on            # distributed-memory parallelism
-     export        USE_MPIF90=on            # compile with mpif90 script
+#   export           USE_MPI=on            # distributed-memory parallelism
+#    export        USE_MPIF90=on            # compile with mpif90 script
+#    export         which_MPI=openmpi       # compile with OpenMPI library
 #export         which_MPI=mpich         # compile with MPICH library
 #export         which_MPI=mpich2        # compile with MPICH2 library
-     export         which_MPI=openmpi       # compile with OpenMPI library
 
 #export        USE_OpenMP=on            # shared-memory parallelism
 
-# export              FORT=ifort
- export              FORT=gfortran
+#export              FORT=ifort
+export              FORT=gfortran
 #export              FORT=pgi
 
 # export         USE_DEBUG=on            # use Fortran debugging flags
@@ -384,7 +384,7 @@ fi
 
 # Put the binary to execute in the following directory.
 
- export            BINDIR=/Users/CnWang/temp_build
+ export            BINDIR=/home/cw686/roms_build
 
 # Put the f90 files in a project specific Build directory to avoid conflict
 # with other projects.

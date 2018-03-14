@@ -126,8 +126,8 @@
      &    LBC(ieast,isVbar,ng)%acquire.and.                             &
      &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
         DO j=JstrT,JendT
-          BOUNDARY(ng)%ubar_east(j)=fac*(vamp*COS(omega))
-!          BOUNDARY(ng)%ubar_east(j)=0.0_r8
+!          BOUNDARY(ng)%ubar_east(j)=fac*(vamp*COS(omega))
+          BOUNDARY(ng)%ubar_east(j)=0.0_r8
         END DO
         DO j=JstrP,JendT
           BOUNDARY(ng)%vbar_east(j)=0.0_r8

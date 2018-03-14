@@ -73,7 +73,7 @@
 ! Input variable information file name.  This file needs to be processed
 ! first so all information arrays can be initialized properly.
 
-     VARNAME = /glade/u/home/chuning/git/fjord_roms/varinfo.dat
+     VARNAME = /home/cw686/git/fjord_roms/varinfo.dat
 
 ! Number of nested grids.
 
@@ -91,8 +91,8 @@ GridsInLayer =  1
 ! Grid dimension parameters. See notes below in the Glossary for how to set
 ! these parameters correctly.
 
-          Lm == 550           ! Number of I-direction INTERIOR RHO-points
-          Mm == 200           ! Number of J-direction INTERIOR RHO-points
+          Lm == 10           ! Number of I-direction INTERIOR RHO-points
+          Mm == 10           ! Number of J-direction INTERIOR RHO-points
            N == 40            ! Number of vertical levels
 
         Nbed =  0             ! Number of sediment bed layers
@@ -106,8 +106,8 @@ GridsInLayer =  1
 ! shared-memory configurations used to determine tile horizontal range
 ! indices (Istr,Iend) and (Jstr,Jend), [1:Ngrids].
 
-       NtileI == 18                              ! I-direction partition
-       NtileJ == 6                               ! J-direction partition
+       NtileI == 1                               ! I-direction partition
+       NtileJ == 1                               ! J-direction partition
 
 ! Set lateral boundary conditions keyword. Notice that a value is expected
 ! for each boundary segment per nested grid for each state variable.
@@ -222,7 +222,7 @@ ad_VolCons(north) ==  F                            ! northern boundary
 
        NRREC == 0
    LcycleRST == T
-        NRST == 4320
+        NRST == 2880
         NSTA == 12
         NFLT == 1
        NINFO == 12
@@ -447,14 +447,14 @@ LtracerSponge == F F                            ! temperature, salinity, inert
 ! point Sources/Sinks (like river runoff transport) and mass point
 ! Sources/Sinks (like volume vertical influx), [1:Ngrids].
 
-      LuvSrc == F                          ! horizontal momentum transport
+      LuvSrc == T                          ! horizontal momentum transport
        LwSrc == F                          ! volume vertical influx
 
 ! Logical switches (TRUE/FALSE) to activate tracers point Sources/Sinks
 ! (like river runoff) and to specify which tracer variables to consider:
 ! [1:NAT+NPT,Ngrids].  See glossary below for details.
 
-  LtracerSrc == F F                        ! temperature, salinity, inert
+  LtracerSrc == T T                        ! temperature, salinity, inert
 
 ! Logical switches (TRUE/FALSE) to read and process climatology fields.
 ! See glossary below for details.
@@ -879,7 +879,7 @@ Dout(iTvdif) == T T     ! temp_vdiff, ...    vertical diffusion
 
 ! Input NetCDF file names, [1:Ngrids].
 
-     GRDNAME == /glade/u/home/chuning/git/fjord_roms/fjord_grd_test.nc
+     GRDNAME == /home/cw686/git/fjord_roms/fjord_grd_test.nc
      ININAME == ocean_ini.nc
      ITLNAME == ocean_itl.nc
      IRPNAME == ocean_irp.nc
@@ -911,7 +911,7 @@ Dout(iTvdif) == T T     ! temp_vdiff, ...    vertical diffusion
 
 ! Input Sources/Sinks forcing (like river runoff) file name.
 
-     SSFNAME == ocean_ssf.nc
+     SSFNAME == /home/cw686/git/fjord_roms/fjord_river_test.nc
 
 ! Input tidal forcing file name.
 
@@ -934,30 +934,30 @@ Dout(iTvdif) == T T     ! temp_vdiff, ...    vertical diffusion
 
 ! Output NetCDF file names, [1:Ngrids].
 
-     DAINAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_dai.nc
-     GSTNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_gst.nc
-     RSTNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_rst.nc
-     HISNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_his.nc
-     QCKNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_his2.nc
-     TLMNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_tlm.nc
-     TLFNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_tlf.nc
-     ADJNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_adj.nc
-     AVGNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_avg.nc
-    AVG2NAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_avg2.nc
-     HARNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_har.nc
-     DIANAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_dia.nc
-     STANAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_sta.nc
-     FLTNAME == /glade/scratch/chuning/tmpdir_fjord/outputs/fjord_flt.nc
+     DAINAME == /home/cw686/roms_build/outputs/fjord_dai.nc
+     GSTNAME == /home/cw686/roms_build/outputs/fjord_gst.nc
+     RSTNAME == /home/cw686/roms_build/outputs/fjord_rst.nc
+     HISNAME == /home/cw686/roms_build/outputs/fjord_his.nc
+     QCKNAME == /home/cw686/roms_build/outputs/fjord_his2.nc
+     TLMNAME == /home/cw686/roms_build/outputs/fjord_tlm.nc
+     TLFNAME == /home/cw686/roms_build/outputs/fjord_tlf.nc
+     ADJNAME == /home/cw686/roms_build/outputs/fjord_adj.nc
+     AVGNAME == /home/cw686/roms_build/outputs/fjord_avg.nc
+    AVG2NAME == /home/cw686/roms_build/outputs/fjord_avg2.nc
+     HARNAME == /home/cw686/roms_build/outputs/fjord_har.nc
+     DIANAME == /home/cw686/roms_build/outputs/fjord_dia.nc
+     STANAME == /home/cw686/roms_build/outputs/fjord_sta.nc
+     FLTNAME == /home/cw686/roms_build/outputs/fjord_flt.nc
 
 ! Input ASCII parameter filenames.
 
-     APARNAM =  /glade/scratch/chuning/tmpdir_fjord/s4dvar.in
-     SPOSNAM =  /glade/scratch/chuning/tmpdir_fjord/stations.in
-     FPOSNAM =  /glade/scratch/chuning/tmpdir_fjord/floats.in
-     IPARNAM =  /glade/scratch/chuning/tmpdir_fjord/ice.in
-     BPARNAM =  /glade/scratch/chuning/tmpdir_fjord/bio_Fennel.in
-     SPARNAM =  /glade/scratch/chuning/tmpdir_fjord/sediment.in
-     USRNAME =  /glade/scratch/chuning/tmpdir_fjord/MyFile.dat
+     APARNAM =  s4dvar.in
+     SPOSNAM =  stations.in
+     FPOSNAM =  floats.in
+     IPARNAM =  ice.in
+     BPARNAM =  bio_Fennel.in
+     SPARNAM =  sediment.in
+     USRNAME =  MyFile.dat
 
 !
 !  GLOSSARY:
