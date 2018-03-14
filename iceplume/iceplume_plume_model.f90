@@ -120,12 +120,8 @@ SUBROUTINE iceplume_plume_model
             ! a manual comparrison of ambient and plume density. If plume density >= ambient density
             ! we assign ISTATE = -1, again ending the call to the plume model.
 
-            temperature = Y(3)
-            salinity = Y(4)
-            depth = zIn
-
-            ! Calculate plume density
-            rhoPlume = RHO(temperature, salinity, depth)
+            ! Calculate plume density (rho = RHO(temp, salt, depth))
+            rhoPlume = RHO(Y(3), Y(4), zIn)
 
             ! Calculate ambient density
             IF (K .EQ. Nr+1) THEN
