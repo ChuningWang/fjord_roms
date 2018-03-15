@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 import pyroms
 
 # ---------------- load grid ----------------------------------
-grd1 = 'fjord'
+grd1 = 'fjord_test'
 grd = pyroms.grid.get_ROMS_grid(grd1)
 msk = grd.hgrid.mask[:, 1]
 

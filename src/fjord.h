@@ -23,6 +23,9 @@
 #define NO_WRITE_GRID
 #undef NO_HIS
 
+/* iceplume */
+#define ICEPLUME
+
 /* advection, dissipation, pressure grad, etc. */
 #define UV_ADV
 #define UV_COR
