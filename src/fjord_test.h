@@ -24,7 +24,7 @@
 #undef NO_HIS
 
 /* iceplume */
-#undef ICEPLUME
+#define ICEPLUME
 
 /* advection, dissipation, pressure grad, etc. */
 #define UV_ADV
@@ -37,11 +37,8 @@
 
 #define UV_VIS2
 #define MIX_S_UV
-#define VISC_GRID
-
 #define TS_DIF2
-#define MIX_GEO_TS
-#define DIFF_GRID
+#define MIX_S_TS
 
 #ifdef SOLVE3D
 # define DJ_GRADPS

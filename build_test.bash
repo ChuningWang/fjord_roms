@@ -80,13 +80,13 @@ done
 # determine the name of the ".h" header file with the application
 # CPP definitions.
 
-export   ROMS_APPLICATION=FJORD
+export   ROMS_APPLICATION=FJORD_TEST
 
 # Set a local environmental variable to define the path to the directories
 # where all this project's files are kept.
 
 # export        MY_ROOT_DIR=/glade/u/home/chuning/git/roms
-export        MY_ROOT_DIR=/home/cw686/git/roms_clean
+export        MY_ROOT_DIR=/home/cw686/git/roms
 export     MY_PROJECT_DIR=${PWD}
 
 # The path to the user's local current ROMS source code.

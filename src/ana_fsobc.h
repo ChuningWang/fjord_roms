@@ -74,8 +74,8 @@
       IF (LBC(ieast,isFsur,ng)%acquire.and.                             &
      &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
         DO j=JstrT,JendT
-!          BOUNDARY(ng)%zeta_east(j)=fac*(fsamp*COS(omega))
-          BOUNDARY(ng)%zeta_east(j)=0
+          BOUNDARY(ng)%zeta_east(j)=fac*(fsamp*COS(omega))
+!          BOUNDARY(ng)%zeta_east(j)=0
         END DO
       END IF
 
