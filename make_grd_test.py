@@ -35,7 +35,7 @@ beta = 0.
 theta_b = 2.0
 theta_s = 8.0
 Tcline = 10
-N = 40
+N = 20
 hmin = 10
 
 # grid name
@@ -67,8 +67,8 @@ xxvert, yyvert = np.meshgrid(xvert, yvert)
 msk = np.ones((Yrho, Xrho))
 # west, north and south boundary
 msk[:, 0] = 0
-msk[0, :] = 0
-msk[-1, :] = 0
+# msk[0, :] = 0
+# msk[-1, :] = 0
 
 # ------------ write hgrid ---------------------------------------------
 hgrd = pyroms.hgrid.CGrid(xxvert, yyvert)

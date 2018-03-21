@@ -15,8 +15,8 @@ nr = len(ypos)
 rdir = np.zeros(nr)
 river = np.ones(nr)
 rtime = np.array([0., 366.])
-rtrs = np.ones((2, nr))*50.
-rtemp = np.ones((2, grd.vgrid.N, nr))*10.
+rtrs = np.ones((2, nr))*100.
+rtemp = np.ones((2, grd.vgrid.N, nr))*0.
 rsalt = np.ones((2, grd.vgrid.N, nr))*0.
 rdye1 = np.ones((2, grd.vgrid.N, nr))*1.
 
