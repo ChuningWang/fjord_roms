@@ -93,8 +93,12 @@
      &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
         DO k=1,N(ng)
           DO j=JstrT,JendT
-            BOUNDARY(ng)%t_east(j,k,itemp)=T0(ng)
-            BOUNDARY(ng)%t_east(j,k,isalt)=S0(ng)
+            ! BOUNDARY(ng)%t_east(j,k,itemp)=T0(ng)
+            ! BOUNDARY(ng)%t_east(j,k,isalt)=S0(ng)
+            BOUNDARY(ng)%t_east(j,k,itemp)=T0(ng) + &
+              & 2.0d0*(TANH(0.1*pi*(z_r(Iend+1,j,k)+20)) + 1)
+            BOUNDARY(ng)%t_east(j,k,isalt)=S0(ng) - &
+              & 5.0d0*(TANH(0.1*pi*(z_r(Iend+1,j,k)+20)) + 1)
 # ifdef SEDIMENT
             DO ised=1,NST
               BOUNDARY(ng)%t_east(j,k,idsed(ised))=0.0_r8
@@ -123,8 +127,12 @@
      &    DOMAIN(ng)%Southern_Edge(tile)) THEN
         DO k=1,N(ng)
           DO i=IstrT,IendT
-            BOUNDARY(ng)%t_south(i,k,itemp)=T0(ng)
-            BOUNDARY(ng)%t_south(i,k,isalt)=S0(ng)
+            ! BOUNDARY(ng)%t_south(i,k,itemp)=T0(ng)
+            ! BOUNDARY(ng)%t_south(i,k,isalt)=S0(ng)
+            BOUNDARY(ng)%t_south(i,k,itemp)=T0(ng) + &
+              & 2.0d0*(0.1*TANH(pi*(z_r(i,0,k)+20)) + 1)
+            BOUNDARY(ng)%t_south(i,k,isalt)=S0(ng) - &
+              & 5.0d0*(0.1*TANH(pi*(z_r(i,0,k)+20)) + 1)
 # ifdef SEDIMENT
             DO ised=1,NST
               BOUNDARY(ng)%t_south(i,k,idsed(ised))=0.0_r8
@@ -138,8 +146,12 @@
      &    DOMAIN(ng)%Northern_Edge(tile)) THEN
         DO k=1,N(ng)
           DO i=IstrT,IendT
-            BOUNDARY(ng)%t_north(i,k,itemp)=T0(ng)
-            BOUNDARY(ng)%t_north(i,k,isalt)=S0(ng)
+            ! BOUNDARY(ng)%t_north(i,k,itemp)=T0(ng)
+            ! BOUNDARY(ng)%t_north(i,k,isalt)=S0(ng)
+            BOUNDARY(ng)%t_north(i,k,itemp)=T0(ng) + &
+              & 2.0d0*(0.1*TANH(pi*(z_r(i,Jend-1,k)+20)) + 1)
+            BOUNDARY(ng)%t_north(i,k,isalt)=S0(ng) - &
+              & 5.0d0*(0.1*TANH(pi*(z_r(i,Jend-1,k)+20)) + 1)
 # ifdef SEDIMENT
             DO ised=1,NST
               BOUNDARY(ng)%t_north(i,k,idsed(ised))=0.0_r8
