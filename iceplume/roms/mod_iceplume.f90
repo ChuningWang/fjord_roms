@@ -1,8 +1,7 @@
 MODULE mod_iceplume
 ! This module stores all global variables.
 
-  ! USE mod_kinds
-  ! USE mod_param, ONLY : N, Ngrids, NT
+  USE mod_kinds
   implicit none
 
   ! ====================================================================
@@ -16,13 +15,17 @@ MODULE mod_iceplume
   logical :: useTracers          = .false.
   logical :: useInputTracers     = .true.
 
-  integer :: ngr          ! nested grid ID
+  integer :: ngr
   integer :: Nr           ! total number of layers
   real(r8) :: dy          ! grid cell resolution [m]
   real(r8) :: dx          ! grid cell resolution [m]
   real(r8) :: iceDepth    ! ice bottom depth [m], if iceDepth is positive,
                           ! then the ice bottom depth is always equal to
                           ! the water depth (iceDepthK = 1)
+
+  integer(r8), parameter :: Ngrids = 1
+  integer(r8), parameter :: N(1) = 40
+  integer(r8), parameter :: NT(1) = 2
 
   ! Initial (discharge) conditions
   ! real(r8) :: wIni = 1.d1        ! initial vertical velocity [m s^-1]
@@ -179,7 +182,6 @@ MODULE mod_iceplume
 
     SUBROUTINE allocate_iceplume(ng)
 
-      USE mod_param
       integer :: ng
 
       IF (ng .EQ. 1) allocate(PLUME(Ngrids))

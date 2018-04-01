@@ -1,86 +1,53 @@
-SUBROUTINE iceplume(ng, I)
+PROGRAM iceplume_run
 
-  ! Load public modules
-  USE mod_scalars, ONLY: isalt, itemp
-  USE mod_grid
-  USE mod_ocean
-  USE mod_stepping, ONLY : nrhs
-  USE mod_sources
+  use mod_iceplume
+  integer :: ng, I
+  ng = 1
+  I = 1
+  CALL iceplume(ng, I)
+  CALL iceplume_write(ng)
+
+END PROGRAM
+
+SUBROUTINE iceplume(ng, I)
 
   ! Load private modules
   USE mod_iceplume
 
   implicit none
   integer, intent(in) :: ng, I
-  integer :: II, JI, DI
-  real(r8) :: pr, prRef
-  real(r8) :: rIni = 1.d0
-  integer :: one = 1
+  real(r8) :: wIni = 1.d1
+  real(r8) :: rIni = 1.d1
+  real(r8) :: TIni = 0.d0
+  real(r8) :: SIni = 0.d0
+
+  CALL allocate_iceplume(ng)
 
   ! ==================================================================
   ! Read in some scalar parameters
   ngr = ng
-  Nr = N(ng)
-  II = SOURCES(ng) % Isrc(I)
-  JI = SOURCES(ng) % Jsrc(I)
-  IF ((SOURCES(ng) % Dsrc(I)) .EQ. 0) THEN  ! read in v direction
-    dx = abs(GRID(ng) % om_r(II, JI))
-    dy = abs(GRID(ng) % on_r(II, JI))
-  ELSE
-    dx = abs(GRID(ng) % on_r(II, JI))
-    dy = abs(GRID(ng) % om_r(II, JI))
-  ENDIF
-  iceDepth = -abs(GRID(ng) % h(II, JI))
+  Nr = 40
+  dy = 200.d0
+  dx = 200.d0
+  iceDepth = 1.d0
 
   ! ==================================================================
   ! Read in profiles at the grid cell
-  ! z_w
-  DO K = 1, N(ng)+1
-    PLUME(ng) % zW(K) = GRID(ng) % z_w(II, JI, K-1)
+  ! open(unit=15, file='./zw_input.txt', action='read')
+  open(unit=15, file='./iceplume_test_input.txt', action='read')
+  ! 100 format(5 E12.4)
+  100 format(5 F12.6)
+  DO K = 1, Nr
+      read(15, 100)  PLUME(ng) % zW(K), PLUME(ng) % sAm(K), &
+                   & PLUME(ng) % tAm(K), PLUME(ng) % vAm(K), &
+                   & PLUME(ng) % wAm(K)
+      ! PLUME(ng) % zW(K) = -PLUME(ng) % zW(K)
   ENDDO
-
-  DO K = 1, N(ng)
-    ! temp and salt
-    PLUME(ng) % tpAm(K) = OCEAN(ng) % t(II, JI, K, nrhs(ng), itemp)
-    PLUME(ng) % sAm(K) = OCEAN(ng) % t(II, JI, K, nrhs(ng), isalt)
-
-    IF (useTracers) THEN
-      ! tracers
-      DO iTracer = 3, NT(ng)
-        PLUME(ng) % trcAm(K, iTracer) = &
-          & OCEAN(ng) % t(II, JI, K, nrhs(ng), iTracer)
-      ENDDO
-    ENDIF
-
-    ! convert potential temp to in-situ temp
-    prRef = 101.d3*1.d-4
-    pr = prRef + (abs(PLUME(ng) % zW(K))*rho_ref*g)*1.d-4  ! Pressure [dbar]
-    CALL SW_TEMP(PLUME(ng) % sAm(K), PLUME(ng) % tpAm(K), &
-               & pr, prRef, PLUME(ng) % tAm(K))
-
-    ! u/v, w
-    IF ((SOURCES(ng) % Dsrc(I)) .EQ. 0) THEN  ! read in v direction
-      PLUME(ng) % vAm(K) = 0.5d0*(OCEAN(ng) % v(II, JI, K, nrhs(ng)) + &
-        & OCEAN(ng) % v(II, JI+1, K, nrhs(ng)))
-    ELSE  ! read in u direction
-      PLUME(ng) % vAm(K) = 0.5d0*(OCEAN(ng) % u(II, JI, K, nrhs(ng)) + &
-        & OCEAN(ng) % u(II+1, JI, K, nrhs(ng)))
-    ENDIF
-
-    PLUME(ng) % wAm(K) = 0.5*(OCEAN(ng) % wvel(II, JI, K-1) + &
-      & OCEAN(ng) % wvel(II, JI, K))
-  ENDDO
+  PLUME(ng) % zW(Nr+1) = 0.d0
+  close(unit=15)
 
   ! ==================================================================
-  CALL iceplume_calc(ng, (SOURCES(ng) % Qbar(I))/rIni, rIni, &
-                   & SOURCES(ng) % Tsrc(I, one, itemp),  &
-                   & SOURCES(ng) % Tsrc(I, one, isalt))
-
-  write(*, '(I4, I4, 20 E20.8)')  &
-    & II, JI, &
-    & PLUME(ng) % zW(20), PLUME(ng) % tpAm(20), PLUME(ng) % tAm(20), &
-    & PLUME(ng) % sAm(20), PLUME(ng) % vAm(20), PLUME(ng) % wAm(20), &
-    & PLUME(ng) % ent(2)
+  CALL iceplume_calc(ng, wIni, rIni, TIni, SIni)
 
 END SUBROUTINE iceplume
 
@@ -274,7 +241,7 @@ SUBROUTINE iceplume_calc(ng, wIni, rIni, TIni, SIni)
   ! ==================================================================
 
   integer, intent(in) :: ng
-  real(r8), intent(in) :: wIni, rIni, TIni, SIni
+  real(r8) :: wIni, rIni, TIni, SIni
   real(r8) :: negSum, posSum, posNegRatio
   real(r8) :: meanVel, depth
   real(r8) :: plumeAreaInCell
@@ -294,6 +261,11 @@ SUBROUTINE iceplume_calc(ng, wIni, rIni, TIni, SIni)
       ! Delta Z
       PLUME(ng) % dz(K) = PLUME(ng) % zW(K+1) - PLUME(ng) % zW(K)
   ENDDO
+
+  ! If SIni is negative or zero, set it to a small number
+  IF (SIni .LE. 0.d0) THEN
+    SIni = 1.d-3
+  ENDIF
 
   ! ==================================================================
   ! Find iceDepthK
@@ -756,7 +728,6 @@ SUBROUTINE iceplume_plume_model(ng, rIni, wIni, tIni, sIni)
       ENDIF
       rhoAmbient = RHO(tAmbient, sAmbient, depth)
 
-      ! write(*, '(i3, f12.6, f12.6)') ISTATE, rhoPlume, rhoAmbient
       IF ((rhoPlume .GT. rhoAmbient) .OR. (K .EQ. Nr+1)) THEN
         ISTATE = -1
         plumeDepthK = K
@@ -791,6 +762,8 @@ SUBROUTINE iceplume_plume_model(ng, rIni, wIni, tIni, sIni)
       Y(5) = 0.0
       Y(6) = 0.0
     ENDIF
+
+    write(*, '(20 E12.4)')  Y
 
     ! ==================================================================
     ! Save results

@@ -7,8 +7,8 @@ import pyroms
 
 # ------------ basic grid parameters -----------------------------------
 # grid dimension
-Xfjord = 10
-Yfjord = 10
+Xfjord = 50
+Yfjord = 5
 
 Xpsi = Xfjord  # vertical total
 Ypsi = Yfjord  # horizontal total
@@ -19,10 +19,10 @@ Xvert = Xpsi+3
 Yvert = Ypsi+3
 
 # location of fjord mouth
-Xm = 2.e3  # m
+Xm = 1.e4  # m
 
 # fjord width
-Yw = 2.e3  # m
+Yw = 1.e3  # m
 
 # fjord depth
 Dm = 200.
@@ -67,8 +67,9 @@ xxvert, yyvert = np.meshgrid(xvert, yvert)
 msk = np.ones((Yrho, Xrho))
 # west, north and south boundary
 msk[:, 0] = 0
-# msk[0, :] = 0
-# msk[-1, :] = 0
+msk[:, 1] = 0
+msk[0, :] = 0
+msk[-1, :] = 0
 
 # ------------ write hgrid ---------------------------------------------
 hgrd = pyroms.hgrid.CGrid(xxvert, yyvert)

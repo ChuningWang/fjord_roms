@@ -6,6 +6,7 @@
 *.o
 *.mod
 *.exe
+*.png
 log.txt
 
 build/
