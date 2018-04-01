@@ -384,7 +384,7 @@ fi
 
 # Put the binary to execute in the following directory.
 
- export            BINDIR=/home/cw686/roms_build
+ export            BINDIR=/home/cw686/roms_build2
 
 # Put the f90 files in a project specific Build directory to avoid conflict
 # with other projects.

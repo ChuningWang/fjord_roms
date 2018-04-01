@@ -20,11 +20,11 @@
 #define NONLIN_EOS
 
 /* outputs */
-#define NO_WRITE_GRID
+#undef NO_WRITE_GRID
 #undef NO_HIS
 
 /* iceplume */
-#undef ICEPLUME
+#define ICEPLUME
 
 /* advection, dissipation, pressure grad, etc. */
 #define UV_ADV
@@ -37,11 +37,8 @@
 
 #define UV_VIS2
 #define MIX_S_UV
-#define VISC_GRID
-
 #define TS_DIF2
-#define MIX_GEO_TS
-#define DIFF_GRID
+#define MIX_S_TS
 
 #ifdef SOLVE3D
 # define DJ_GRADPS
@@ -71,17 +68,23 @@
 #define UV_LDRAG
 #undef UV_QDRAG
 
+/* tracers */
+#define T_PASSIVE
+#define ANA_PASSIVE
+
 /* sediment */
 #ifdef SEDIMENT
 # define SUSPLOAD
 #endif
 
 /* analytical functionals */
+#undef ANA_GRID
 #define ANA_INITIAL
 #define ANA_FSOBC
 #define ANA_M2OBC
 #define ANA_M3OBC
 #define ANA_TOBC
+#undef ANA_PSOURCE
 #ifdef SEDIMENT
 # define ANA_SEDIMENT
 #endif

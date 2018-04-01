@@ -80,7 +80,7 @@ done
 # determine the name of the ".h" header file with the application
 # CPP definitions.
 
-export   ROMS_APPLICATION=FJORD_TEST
+export   ROMS_APPLICATION=FJORD
 
 # Set a local environmental variable to define the path to the directories
 # where all this project's files are kept.

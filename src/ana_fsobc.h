@@ -70,7 +70,7 @@
 #if defined FJORD
       fac=TANH((tdays(ng)-dstart)/1.0_r8)
       omega=2.0_r8*pi*time(ng)/(12.42_r8*3600.0_r8)  !  M2 Tide period
-      fsamp=1.0_r8  ! Tidal amplitude
+      fsamp=2.0_r8  ! Tidal amplitude
       IF (LBC(ieast,isFsur,ng)%acquire.and.                             &
      &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
         DO j=JstrT,JendT
