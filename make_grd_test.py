@@ -10,6 +10,9 @@ import pyroms
 Xfjord = 50
 Yfjord = 5
 
+dx = 200
+dy = 200
+
 Xpsi = Xfjord  # vertical total
 Ypsi = Yfjord  # horizontal total
 
@@ -19,10 +22,10 @@ Xvert = Xpsi+3
 Yvert = Ypsi+3
 
 # location of fjord mouth
-Xm = 1.e4  # m
+Xm = Xfjord*dx  # m
 
 # fjord width
-Yw = 1.e3  # m
+Yw = Yfjord*dy  # m
 
 # fjord depth
 Dm = 200.
@@ -36,7 +39,9 @@ theta_b = 2.0
 theta_s = 8.0
 Tcline = 10
 N = 20
-hmin = 10
+hsill = 100  # m
+xsill = 7000  # m
+wsill = 2000  # m
 
 # grid name
 grd_name = 'fjord_test'
@@ -79,11 +84,14 @@ hgrd.mask_rho = msk
 
 # ------------ vertical grid construction ------------------------------
 h = Dm*np.ones((Yrho, Xrho))
+# sill
+msks = (hgrd.x_rho >= xsill-wsill) & (hgrd.x_rho <= xsill+wsill)
+h[msks] = Dm + (hsill - Dm)*np.exp(-(hgrd.x_rho[msks]-xsill)**2/(0.1*wsill**2))
 
 # ------------ write vgrid ---------------------------------------------
 vgrd = pyroms.vgrid.s_coordinate_4(h, theta_b, theta_s, Tcline, N, hraw=h)
 
 # ------------ write grid ----------------------------------------------
 grd = pyroms.grid.ROMS_Grid(grd_name, hgrd, vgrd)
-pyroms.grid.write_ROMS_grid(grd, filename='fjord_grd_test.nc')
+pyroms.grid.write_ROMS_grid(grd, filename='/Users/cw686/roms_stuff/grid/fjord_grd_test.nc')
 

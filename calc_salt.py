@@ -5,13 +5,12 @@ import matplotlib.pyplot as plt
 from cmocean import cm
 import pyroms
 
-uscale = 5
 # ----------------- load grid -----------------------------------------------
 grd = pyroms.grid.get_ROMS_grid('fjord_test')
 x = grd.hgrid.x_rho
 y = grd.hgrid.y_rho
-xvert = grd.hgrid.x_vert
-yvert = grd.hgrid.y_vert
+dx = grd.hgrid.dx
+dy = grd.hgrid.dy
 xu = grd.hgrid.x_u
 yu = grd.hgrid.y_u
 xv = grd.hgrid.x_v
@@ -23,20 +22,10 @@ msku = grd.hgrid.mask_u
 mskv = grd.hgrid.mask_v
 N = grd.vgrid.N
 
-jslice = 3
-
-xvert_t = np.tile(xvert[jslice, :], (N+1, 1))
-zw_t = np.zeros(xvert_t.shape)
-zw_t[:, 1:-1] = 0.5 * (zw[:, jslice, 1:] + zw[:, jslice, :-1])
-zw_t[:, 1] = zw[:, jslice, 1]
-zw_t[:, -1] = zw[:, jslice, -1]
-
-xu_t = np.tile(xu[jslice, :], (N, 1))
-zr_t = 0.5 * (zr[:, jslice, 1:] + zr[:, jslice, :-1])
-
+# ----------------- read data -----------------------------------------------
 eta, xi = x.shape
-fnum = 20
-snum = 24*1
+fnum = 2
+snum = 24*2
 nt = fnum*snum+1
 time = np.zeros((nt))
 
@@ -113,7 +102,7 @@ salt = np.ma.masked_where(msk4d, salt)
 dye = np.ma.masked_where(msk4d, dye)
 u = np.ma.masked_where(msku4d, u)
 v = np.ma.masked_where(mskv4d, v)
-# w = np.ma.masked_where(mskw4d, w)
+w = np.ma.masked_where(mskw4d, w)
 
 zeta2 = np.ma.masked_where(msk3d, zeta2)
 temp2 = np.ma.masked_where(msk4d, temp2)
@@ -121,87 +110,6 @@ salt2 = np.ma.masked_where(msk4d, salt2)
 dye2 = np.ma.masked_where(msk4d, dye2)
 u2 = np.ma.masked_where(msku4d, u2)
 v2 = np.ma.masked_where(mskv4d, v2)
-# w2 = np.ma.masked_where(mskw4d, w2)
+w2 = np.ma.masked_where(mskw4d, w2)
 
-w = 0.25*(w[:, 1:, :, 1:] + w[:, 1:, :, :-1] +
-          w[:, :-1, :, 1:] + w[:, :-1, :, :-1])
-w2 = 0.25*(w2[:, 1:, :, 1:] + w2[:, 1:, :, :-1] +
-           w2[:, :-1, :, 1:] + w2[:, :-1, :, :-1])
 
-# Along track transects
-fig, axs = plt.subplots(4)
-fig.subplots_adjust(hspace=0.05, right=0.85)
-axs[3].set_xlabel('X [m]')
-axs[3].set_ylabel('Z [m]')
-# axs[0].set_ylabel('Z [m]')
-axs[0].text(8000, -25, 'ICEPLUME')
-axs[1].text(8000, -25, 'NO ICEPLUME')
-axs[2].text(8000, -25, 'ICEPLUME')
-axs[3].text(8000, -25, 'NO ICEPLUME')
-axs[0].set_xticklabels([''])
-axs[1].set_xticklabels([''])
-axs[2].set_xticklabels([''])
-axs[0].set_yticks([-50, -100, -150, -200])
-axs[0].set_yticklabels(['50', '100', '150', '200'])
-axs[1].set_yticks([-50, -100, -150, -200])
-axs[1].set_yticklabels(['50', '100', '150', '200'])
-axs[2].set_yticks([-50, -100, -150, -200])
-axs[2].set_yticklabels(['50', '100', '150', '200'])
-axs[3].set_yticks([-50, -100, -150, -200])
-axs[3].set_yticklabels(['50', '100', '150', '200'])
-for i in range(nt):
-    pc1 = axs[0].pcolor(xvert_t, zw_t, dye[i, :, 3, :],
-                        vmin=0, vmax=.5, cmap = cm.matter)
-    pc2 = axs[1].pcolor(xvert_t, zw_t, dye2[i, :, 3, :],
-                        vmin=0, vmax=.5, cmap = cm.matter)
-
-    qv1 = axs[0].quiver(xu_t, zr_t,
-                        u[i, :, 3, :], w[i, :, 3, :],
-                        scale=uscale)
-    qv2 = axs[1].quiver(xu_t, zr_t,
-                        u2[i, :, 3, :], w2[i, :, 3, :],
-                        scale=uscale)
-    # qvkey = plt.quiverkey(qv1, 0.9, 0.1, 0.5, r'0.5 ms$^{-1}$')
-
-    pc3 = axs[2].pcolor(xvert_t, zw_t, salt[i, :, 3, :],
-                        vmin=10, vmax=30, cmap = cm.haline)
-    pc4 = axs[3].pcolor(xvert_t, zw_t, salt2[i, :, 3, :],
-                        vmin=10, vmax=30, cmap = cm.haline)
-
-    qv3 = axs[2].quiver(xu_t, zr_t,
-                        u[i, :, 3, :], w[i, :, 3, :],
-                        scale=uscale)
-    qv4 = axs[3].quiver(xu_t, zr_t,
-                        u2[i, :, 3, :], w2[i, :, 3, :],
-                        scale=uscale)
-
-    qvkey = plt.quiverkey(qv2, 0.9, 0.1, 0.5, r'0.5 ms$^{-1}$')
-
-    if i==0:
-        cbar_ax1 = fig.add_axes([0.87, 0.51, 0.02, 0.37])
-        cb1 = fig.colorbar(pc1, cax=cbar_ax1,
-                           ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5])
-        cb1.set_label('Dye')
-
-        cbar_ax2 = fig.add_axes([0.87, 0.11, 0.02, 0.37])
-        cb2 = fig.colorbar(pc3, cax=cbar_ax2,
-                           ticks=[10, 15, 20, 25, 30])
-        cb2.set_label('Salinity [PSU]')
-
-    plt.savefig('./figs/his_dye_salt_%04d.png' % (i))
-    pc1.remove()
-    pc2.remove()
-    qv1.remove()
-    qv2.remove()
-    qvkey.remove()
-    # fig.delaxes(cbar_ax)
-
-    # plt.savefig('./figs/salt_%04d.png' % (i))
-    pc3.remove()
-    pc4.remove()
-    qv3.remove()
-    qv4.remove()
-    # qvkey.remove()
-    # fig.delaxes(cbar_ax)
-
-plt.close()
