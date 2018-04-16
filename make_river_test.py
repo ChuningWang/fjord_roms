@@ -11,6 +11,7 @@ grd = pyroms.grid.get_ROMS_grid(grd1)
 msk = grd.hgrid.mask[:, xx]
 
 xpos = np.where(msk == 1)[0]
+# xpos = xpos[2:3]
 ypos = xx*np.ones(xpos.shape).astype(int)
 nr = len(ypos)
 rdir = np.zeros(nr)
@@ -31,7 +32,7 @@ v_shape[0, :] = 1
 # v_shape = v_shape/grd.vgrid.N
 
 # create file with all the objects
-fout = nc.Dataset('fjord_river_test.nc', 'w')
+fout = nc.Dataset('/Users/cw686/roms_stuff/river/fjord_river_test.nc', 'w')
 fout.type = 'ROMS RIVERS file'
 fout.title = 'Fjord test'
 fout.source = 'Analytical'
