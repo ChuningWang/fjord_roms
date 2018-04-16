@@ -69,13 +69,13 @@
 !
 #if defined FJORD
       fac=TANH((tdays(ng)-dstart)/1.0_r8)
-      omega=2.0_r8*pi*time(ng)/(12.42_r8*3600.0_r8)  !  M2 Tide period
-      fsamp=2.0_r8  ! Tidal amplitude
+!      fsamp=2.0_r8  !  zeta0
+!      omega=2.0_r8*pi/(12.42_r8*3600.0_r8)  !  M2 Tide period
       IF (LBC(ieast,isFsur,ng)%acquire.and.                             &
      &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
         DO j=JstrT,JendT
-          BOUNDARY(ng)%zeta_east(j)=fac*(fsamp*COS(omega))
-!          BOUNDARY(ng)%zeta_east(j)=0
+!          BOUNDARY(ng)%zeta_east(j)=fac*fsamp*SIN(omega*time(ng))
+          BOUNDARY(ng)%zeta_east(j)=0.0_r8
         END DO
       END IF
 

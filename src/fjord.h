@@ -38,7 +38,8 @@
 #define UV_VIS2
 #define MIX_S_UV
 #define TS_DIF2
-#define MIX_S_TS
+#undef MIX_S_TS
+#define MIX_GEO_TS
 
 #ifdef SOLVE3D
 # define DJ_GRADPS
@@ -67,6 +68,19 @@
 #define UV_DRAG_GRID
 #define UV_LDRAG
 #undef UV_QDRAG
+
+#define VISC_GRID
+#define DIFF_GRID
+
+/* tides */
+#define LTIDES
+#ifdef LTIDES
+# define SSH_TIDES
+# define UV_TIDES
+# define ADD_FSOBC
+# define ADD_M2OBC
+# define RAMP_TIDES
+#endif
 
 /* tracers */
 #define T_PASSIVE

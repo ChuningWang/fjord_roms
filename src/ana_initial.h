@@ -339,11 +339,11 @@
       DO k=1,N(ng)
         DO j=JstrT,JendT
           DO i=IstrT,IendT
-            t(i,j,k,1,itemp)=T0(ng) + &
-              & 2.0d0*(TANH(0.1*pi*(z_r(Iend+1,j,k)+20)) + 1)
+            t(i,j,k,1,itemp)= 4.0_r8 + &
+              & 2.0d0*(TANH(0.025*pi*(z_r(i,j,k)+USER(1))) + 1)
 #  ifdef SALINITY
-            t(i,j,k,1,isalt)=S0(ng) - &
-              & 5.0d0*(TANH(0.1*pi*(z_r(Iend+1,j,k)+20)) + 1)
+            t(i,j,k,1,isalt)= 30.0_r8 - &
+              & 10.0d0*(TANH(0.025*pi*(z_r(i,j,k)+USER(1))) + 1)
 #  endif
           END DO
         END DO
