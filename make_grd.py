@@ -53,13 +53,13 @@ Xd2 = 40.e3  # m
 # yexp = 0.1
 
 # fjord max depth
-Dm = 800.
+Dm = 850.
 
 # sill depth
 Ds = 400.
 
 # fjord shallow depth
-Di = 800.
+Di = 850.
 
 # Coriolis Parameter
 f0 = 1.e-4

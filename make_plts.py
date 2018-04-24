@@ -35,7 +35,7 @@ xu_t = np.tile(xu[jslice, :], (N, 1))
 zr_t = 0.5 * (zr[:, jslice, 1:] + zr[:, jslice, :-1])
 
 eta, xi = x.shape
-fnum = 20
+fnum = 10
 snum = 24*1
 nt = fnum*snum+1
 time = np.zeros((nt))
@@ -187,6 +187,8 @@ for i in range(nt):
         cb2 = fig.colorbar(pc3, cax=cbar_ax2,
                            ticks=[10, 15, 20, 25, 30])
         cb2.set_label('Salinity [PSU]')
+
+    ttl = axs[0].set_title(grd.name + '_Hour_' + str(time[i]))
 
     plt.savefig('./figs/his_dye_salt_%04d.png' % (i))
     pc1.remove()

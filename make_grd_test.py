@@ -7,7 +7,7 @@ import pyroms
 
 # ------------ basic grid parameters -----------------------------------
 # grid dimension
-Xfjord = 50
+Xfjord = 100
 Yfjord = 5
 
 dx = 200
@@ -40,7 +40,7 @@ theta_s = 8.0
 Tcline = 10
 N = 20
 hsill = 100  # m
-xsill = 7000  # m
+xsill = 10000  # m
 wsill = 2000  # m
 
 # grid name
