@@ -102,7 +102,7 @@
 !
       integer :: i, j
       real(r8) :: angle, cff, fac, major, minor, omega, phase, val
-      real(r8) :: ramp, uamp, vamp
+      real(r8) :: fsamp, uamp, vamp
 #if defined ESTUARY_TEST || defined INLET_TEST
       real(r8) :: my_area, my_flux, tid_flow, riv_flow, cff1, cff2,     &
      &            model_flux
@@ -119,14 +119,16 @@
 !
 #if defined FJORD
       fac=TANH((tdays(ng)-dstart)/1.0_r8)
-      omega=2.0_r8*pi*time(ng)/(12.42_r8*3600.0_r8)  !  M2 Tide period
-      uamp=0.0_r8
-      vamp=0.5_r8  ! Tidal amplitude
+!      fsamp=2.0_r8  !  zeta0
+!      omega=2.0_r8*pi/(12.42_r8*3600.0_r8)  !  M2 Tide period
+!      val=SIN(omega*time(ng))
       IF (LBC(ieast,isUbar,ng)%acquire.and.                             &
      &    LBC(ieast,isVbar,ng)%acquire.and.                             &
      &    DOMAIN(ng)%Eastern_Edge(tile)) THEN
         DO j=JstrT,JendT
-!          BOUNDARY(ng)%ubar_east(j)=fac*(vamp*COS(omega))
+!          cff=SQRT(g*GRID(ng)%h(Istr-1,j))
+!          uamp=fsamp*cff/GRID(ng)%h(Istr-1,j)
+!          BOUNDARY(ng)%ubar_east(j)=fac*uamp*val
           BOUNDARY(ng)%ubar_east(j)=0.0_r8
         END DO
         DO j=JstrP,JendT
