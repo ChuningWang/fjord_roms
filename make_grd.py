@@ -124,6 +124,7 @@ msk0 = msk0[:-1,:-1] | msk0[1:,:-1] | msk0[:-1,1:] | msk0[1:,1:]
 msk[msk0] = 0
 # west boundary
 msk[:, 0] = 0
+msk[:, 1] = 0
 
 # ------------ write hgrid ---------------------------------------------
 hgrd = pyroms.hgrid.CGrid(xxvert, yyvert)

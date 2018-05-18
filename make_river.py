@@ -6,30 +6,35 @@ import pyroms
 
 # ---------------- load grid ----------------------------------
 grd1 = 'fjord'
+xx = 2
 grd = pyroms.grid.get_ROMS_grid(grd1)
-msk = grd.hgrid.mask[:, 1]
+msk = grd.hgrid.mask[:, xx]
 
-xpos = np.where(msk == 1)[0]
-ypos = np.ones(xpos.shape)
+# xpos = np.where(grd.hgrid.y_rho>-W/2 & grd.hgrid.y_rho<W/2)[0]
+xpos = np.array([grd.hgrid.y_rho.shape[0]/2]).astype(int)
+ypos = xx*np.ones(xpos.shape).astype(int)
 nr = len(ypos)
 rdir = np.zeros(nr)
 river = np.ones(nr)
 rtime = np.array([0., 366.])
-rtrs = np.ones((2, nr))*50.
-rtemp = np.ones((2, grd.vgrid.N, nr))*10.
+rtrs = np.ones((2, nr))*250.
+rtemp = np.ones((2, grd.vgrid.N, nr))*0.
 rsalt = np.ones((2, grd.vgrid.N, nr))*0.
 rdye1 = np.ones((2, grd.vgrid.N, nr))*1.
 
-# v_shape = np.zeros((grd.vgrid.N, nr))
-# v_shape[-1, :] = 1
+v_shape = np.zeros((grd.vgrid.N, nr))
+v_shape[0, :] = 1
 
-v_shape = np.ones((grd.vgrid.N, nr))
-v_shape = v_shape/grd.vgrid.N
+# v_shape = np.ones((grd.vgrid.N, nr))
+# for i in range(nr):
+#     v_shape[:, i] = np.arange(grd.vgrid.N)
+#     v_shape[:, i] = v_shape[:, i]/np.sum(v_shape[:, i])
+# v_shape = v_shape/grd.vgrid.N
 
 # create file with all the objects
-fout = nc.Dataset('fjord_river.nc', 'w')
+fout = nc.Dataset('/glade/u/home/chuning/git/fjord_roms/fjord_river.nc', 'w')
 fout.type = 'ROMS RIVERS file'
-fout.title = 'Fjord test'
+fout.title = 'Fjord'
 fout.source = 'Analytical'
 
 fout.createDimension('river_time', None)

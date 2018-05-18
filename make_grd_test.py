@@ -10,8 +10,8 @@ import pyroms
 Xfjord = 50
 Yfjord = 5
 
-dx = 200
-dy = 200
+dx = 200.
+dy = 200.
 
 Xpsi = Xfjord  # vertical total
 Ypsi = Yfjord  # horizontal total
@@ -45,6 +45,12 @@ wsill = 2000  # m
 
 # grid name
 grd_name = 'fjord_test'
+fname = './fjord_grd_test.nc'
+
+# for iceshelf model
+Xshelf = 11
+Zshelf1 = 30.
+Zshelf2 = 10.
 
 # ------------ horizontal grid construction ----------------------------
 # X direction
@@ -93,5 +99,15 @@ vgrd = pyroms.vgrid.s_coordinate_4(h, theta_b, theta_s, Tcline, N, hraw=h)
 
 # ------------ write grid ----------------------------------------------
 grd = pyroms.grid.ROMS_Grid(grd_name, hgrd, vgrd)
-pyroms.grid.write_ROMS_grid(grd, filename='/Users/cw686/roms_stuff/grid/fjord_grd_test.nc')
+pyroms.grid.write_ROMS_grid(grd, filename=fname)
 
+# ------------ write zice for iceshelf model ---------------------------
+zice = np.zeros(h.shape)
+for i in range(Yfjord):
+    zice[i+1, 1:Xshelf+1] = np.linspace(-Zshelf1, -Zshelf2, Xshelf)
+fh = nc.Dataset(fname, 'a')
+fh.createVariable('zice', 'f8', ('eta_rho', 'xi_rho'))
+fh.variables['zice'].long_name = 'iceshelf depth at RHO-points'
+fh.variables['zice'].units = 'meter'
+fh.variables['zice'][:] = zice
+fh.close()
