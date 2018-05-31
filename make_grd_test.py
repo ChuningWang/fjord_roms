@@ -34,23 +34,26 @@ Dm = 200.
 f0 = 1.e-4
 beta = 0.
 
+hsill = 200  # m
+xsill = 15000  # m
+wsill = 2000  # m
+
 # vertical grid specs
 theta_b = 2.0
 theta_s = 8.0
 Tcline = 10
 N = 20
-hsill = 100  # m
-xsill = 10000  # m
-wsill = 2000  # m
 
 # grid name
 grd_name = 'fjord_test'
 fname = './fjord_grd_test.nc'
 
 # for iceshelf model
-Xshelf = 11
+Xshelf = 51
 Zshelf1 = 30.
-Zshelf2 = 10.
+Zshelf2 = 20.
+# Zshelf1 = 0.
+# Zshelf2 = 0.
 
 # ------------ horizontal grid construction ----------------------------
 # X direction

@@ -13,6 +13,8 @@ msk = grd.hgrid.mask[:, xx]
 xpos = np.where(msk == 1)[0]
 # xpos = xpos[2:3]
 ypos = xx*np.ones(xpos.shape).astype(int)
+xpos = np.array([0, 3])
+ypos = np.array([0, 2])
 nr = len(ypos)
 rdir = np.zeros(nr)
 river = np.ones(nr)
@@ -32,7 +34,8 @@ v_shape[0, :] = 1
 # v_shape = v_shape/grd.vgrid.N
 
 # create file with all the objects
-fout = nc.Dataset('/Users/cw686/roms_stuff/river/fjord_river_test.nc', 'w')
+# fout = nc.Dataset('/Users/cw686/roms_stuff/river/fjord_river_test.nc', 'w')
+fout = nc.Dataset('./fjord_river_test.nc', 'w')
 fout.type = 'ROMS RIVERS file'
 fout.title = 'Fjord test'
 fout.source = 'Analytical'

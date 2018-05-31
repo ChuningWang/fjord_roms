@@ -5,7 +5,26 @@ import matplotlib.pyplot as plt
 from cmocean import cm
 import pyroms
 
+# ----------------- functionals ---------------------------------------------
+def get_z(h, hc, N, s_rho, Cs_r, zeta, Vtrans, zice):
+
+    hwater = h - np.abs(zice)
+    z_r = np.empty((N, len(h)), 'd')
+    if Vtrans == 1:
+        for k in range(N):
+            z0 = hc * s_rho[k] + (hwater - hc) * Cs_r[k]
+            z_r[k, :] = z0 + zeta * (1.0 + z0 / hwater)
+            z_r[k, :] = z_r[k, :] - np.abs(zice)
+    elif Vtrans == 2 or Vtrans == 4 or Vtrans == 5:
+        for  k in range(N):
+            z0 = (hc * s_rho[k] + hwater * Cs_r[k]) / (hc + hwater)
+            z_r[k, :] = zeta + (zeta + hwater) * z0
+            z_r[k, :] = z_r[k, :] - np.abs(zice)
+    return z_r
+
+# ----------------- constants -----------------------------------------------
 uscale = 5
+
 # ----------------- load grid -----------------------------------------------
 grd = pyroms.grid.get_ROMS_grid('fjord_test')
 x = grd.hgrid.x_rho
@@ -23,16 +42,38 @@ msku = grd.hgrid.mask_u
 mskv = grd.hgrid.mask_v
 N = grd.vgrid.N
 
+fh = nc.Dataset('./fjord_grd_test.nc')
+zice = fh.variables['zice'][:]
+fh.close()
+# zice[:] = 0
+
 jslice = 3
 
 xvert_t = np.tile(xvert[jslice, :], (N+1, 1))
-zw_t = np.zeros(xvert_t.shape)
-zw_t[:, 1:-1] = 0.5 * (zw[:, jslice, 1:] + zw[:, jslice, :-1])
-zw_t[:, 1] = zw[:, jslice, 1]
-zw_t[:, -1] = zw[:, jslice, -1]
+# zw_t = np.zeros(xvert_t.shape)
+# zw_t[:, 1:-1] = 0.5 * (zw[:, jslice, 1:] + zw[:, jslice, :-1])
+# zw_t[:, 1] = zw[:, jslice, 1]
+# zw_t[:, -1] = zw[:, jslice, -1]
 
 xu_t = np.tile(xu[jslice, :], (N, 1))
-zr_t = 0.5 * (zr[:, jslice, 1:] + zr[:, jslice, :-1])
+# zr_t = 0.5 * (zr[:, jslice, 1:] + zr[:, jslice, :-1])
+
+zw_t = np.zeros(xvert_t.shape)
+zw = get_z(grd.vgrid.h[jslice, :],
+           grd.vgrid.hc, grd.vgrid.N+1, grd.vgrid.s_w, grd.vgrid.Cs_w,
+           np.zeros(zice[jslice, :].shape), grd.vgrid.Vtrans,
+           zice[jslice, :])
+
+zw_t[:, 1:-1] = 0.5 * (zw[:, 1:] + zw[:, :-1])
+zw_t[:, 1] = zw[:, 1]
+zw_t[:, -1] = zw[:, -1]
+
+zr = get_z(grd.vgrid.h[jslice, :],
+           grd.vgrid.hc, grd.vgrid.N, grd.vgrid.s_rho, grd.vgrid.Cs_r,
+           np.zeros(zice[jslice, :].shape), grd.vgrid.Vtrans,
+           zice[jslice, :])
+
+zr_t = 0.5*(zr[:, 1:] + zr[:, :-1])
 
 eta, xi = x.shape
 fnum = 10
@@ -65,7 +106,7 @@ mskv3d = np.tile(mskv == 0, (nt, 1, 1))
 mskv4d = np.tile(mskv == 0, (nt, N, 1, 1))
 
 for i in range(fnum):
-    fin = nc.Dataset('/Users/cw686/roms_stuff/outputs/iceplume/fjord_his_%04d.nc' % (i+1))
+    fin = nc.Dataset('/Users/cw686/roms_stuff/outputs/iceplume/fjord_his_%05d.nc' % (i+1))
     if i == 0:
         time[:snum+1] = fin.variables['ocean_time'][:]
         zeta[:snum+1, :, :] = fin.variables['zeta'][:]
@@ -86,7 +127,7 @@ for i in range(fnum):
         w[i*snum+1:(i+1)*snum+1, :, :, :] = fin.variables['w'][:]
     fin.close()
 
-    fin = nc.Dataset('/Users/cw686/roms_stuff/outputs/ref/fjord_his_%04d.nc' % (i+1))
+    fin = nc.Dataset('/Users/cw686/roms_stuff/outputs/ref/fjord_his_%05d.nc' % (i+1))
     if i == 0:
         zeta2[:snum+1, :, :] = fin.variables['zeta'][:]
         salt2[:snum+1, :, :, :] = fin.variables['salt'][:]
@@ -134,13 +175,17 @@ fig.subplots_adjust(hspace=0.05, right=0.85)
 axs[3].set_xlabel('X [m]')
 axs[3].set_ylabel('Z [m]')
 # axs[0].set_ylabel('Z [m]')
-axs[0].text(8000, -25, 'ICEPLUME')
-axs[1].text(8000, -25, 'NO ICEPLUME')
-axs[2].text(8000, -25, 'ICEPLUME')
-axs[3].text(8000, -25, 'NO ICEPLUME')
+axs[0].text(16000, -150, 'ICEPLUME')
+axs[1].text(16000, -150, 'NO ICEPLUME')
+axs[2].text(16000, -150, 'ICEPLUME')
+axs[3].text(16000, -150, 'NO ICEPLUME')
 axs[0].set_xticklabels([''])
 axs[1].set_xticklabels([''])
 axs[2].set_xticklabels([''])
+axs[0].set_ylim([-200, 0])
+axs[1].set_ylim([-200, 0])
+axs[2].set_ylim([-200, 0])
+axs[3].set_ylim([-200, 0])
 axs[0].set_yticks([-50, -100, -150, -200])
 axs[0].set_yticklabels(['50', '100', '150', '200'])
 axs[1].set_yticks([-50, -100, -150, -200])
@@ -149,38 +194,55 @@ axs[2].set_yticks([-50, -100, -150, -200])
 axs[2].set_yticklabels(['50', '100', '150', '200'])
 axs[3].set_yticks([-50, -100, -150, -200])
 axs[3].set_yticklabels(['50', '100', '150', '200'])
+axs[0].fill_between(x[jslice, :], zice[jslice, :],
+                    facecolor='lightgrey')
+axs[1].fill_between(x[jslice, :], zice[jslice, :],
+                    facecolor='lightgrey')
+axs[2].fill_between(x[jslice, :], zice[jslice, :],
+                    facecolor='lightgrey')
+axs[3].fill_between(x[jslice, :], zice[jslice, :],
+                    facecolor='lightgrey')
+axs[0].fill_between([-200, 0, 200], [-200, -200, -200],
+                    facecolor='lightgrey')
+axs[1].fill_between([-200, 0, 200], [-200, -200, -200],
+                    facecolor='lightgrey')
+axs[2].fill_between([-200, 0, 200], [-200, -200, -200],
+                    facecolor='lightgrey')
+axs[3].fill_between([-200, 0, 200], [-200, -200, -200],
+                    facecolor='lightgrey')
 for i in range(nt):
-    pc1 = axs[0].pcolor(xvert_t, zw_t, dye[i, :, 3, :],
-                        vmin=0, vmax=.5, cmap = cm.matter)
-    pc2 = axs[1].pcolor(xvert_t, zw_t, dye2[i, :, 3, :],
-                        vmin=0, vmax=.5, cmap = cm.matter)
 
-    qv1 = axs[0].quiver(xu_t, zr_t,
-                        u[i, :, 3, :], w[i, :, 3, :],
+    pc1 = axs[0].pcolor(xvert_t, zw_t, dye[i, :, jslice, :],
+                        vmin=0, vmax=.2, cmap = cm.matter)
+    pc2 = axs[1].pcolor(xvert_t, zw_t, dye2[i, :, jslice, :],
+                        vmin=0, vmax=.2, cmap = cm.matter)
+
+    qv1 = axs[0].quiver(xu_t[::2, ::2], zr_t[::2, ::2],
+            u[i, ::2, 3, ::2], w[i, ::2, jslice, ::2],
                         scale=uscale)
-    qv2 = axs[1].quiver(xu_t, zr_t,
-                        u2[i, :, 3, :], w2[i, :, 3, :],
+    qv2 = axs[1].quiver(xu_t[::2, ::2], zr_t[::2, ::2],
+            u2[i, ::2, 3, ::2], w2[i, ::2, jslice, ::2],
                         scale=uscale)
     # qvkey = plt.quiverkey(qv1, 0.9, 0.1, 0.5, r'0.5 ms$^{-1}$')
 
-    pc3 = axs[2].pcolor(xvert_t, zw_t, salt[i, :, 3, :],
+    pc3 = axs[2].pcolor(xvert_t, zw_t, salt[i, :, jslice, :],
                         vmin=10, vmax=30, cmap = cm.haline)
-    pc4 = axs[3].pcolor(xvert_t, zw_t, salt2[i, :, 3, :],
+    pc4 = axs[3].pcolor(xvert_t, zw_t, salt2[i, :, jslice, :],
                         vmin=10, vmax=30, cmap = cm.haline)
 
-    qv3 = axs[2].quiver(xu_t, zr_t,
-                        u[i, :, 3, :], w[i, :, 3, :],
+    qv3 = axs[2].quiver(xu_t[::2, ::2], zr_t[::2, ::2],
+            u[i, ::2, 3, ::2], w[i, ::2, jslice, ::2],
                         scale=uscale)
-    qv4 = axs[3].quiver(xu_t, zr_t,
-                        u2[i, :, 3, :], w2[i, :, 3, :],
+    qv4 = axs[3].quiver(xu_t[::2, ::2], zr_t[::2, ::2],
+            u2[i, ::2, 3, ::2], w2[i, ::2, jslice, ::2],
                         scale=uscale)
 
-    qvkey = plt.quiverkey(qv2, 0.9, 0.1, 0.5, r'0.5 ms$^{-1}$')
+    qvkey = plt.quiverkey(qv2, 0.9, 0.7, 0.5, r'0.5 ms$^{-1}$')
 
     if i==0:
         cbar_ax1 = fig.add_axes([0.87, 0.51, 0.02, 0.37])
         cb1 = fig.colorbar(pc1, cax=cbar_ax1,
-                           ticks=[0, 0.1, 0.2, 0.3, 0.4, 0.5])
+                           ticks=[0, 0.1, 0.2])
         cb1.set_label('Dye')
 
         cbar_ax2 = fig.add_axes([0.87, 0.11, 0.02, 0.37])
@@ -190,7 +252,7 @@ for i in range(nt):
 
     ttl = axs[0].set_title(grd.name + '_Hour_' + str(time[i]))
 
-    plt.savefig('./figs/his_dye_salt_%04d.png' % (i))
+    plt.savefig('./figs/his_dye_salt_%04d.png' % (i), dpi=600)
     pc1.remove()
     pc2.remove()
     qv1.remove()
